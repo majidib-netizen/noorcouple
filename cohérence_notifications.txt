@@ -1,0 +1,292 @@
+╔══════════════════════════════════════════════════════════════════════════════╗
+║         RAPPORT DE COHÉRENCE MATIN / SOIR — NOTIFICATIONS SAKINA           ║
+║         Analyse complète : notifMessages.js + bonusMessages.js              ║
+║         Date : 2026-04-23                                                   ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+PÉRIMÈTRE ANALYSÉ
+─────────────────
+• notifMessages.js : 3 niveaux (léger / modéré / grave) × 2 genres (homme / femme) × 40 jours = 240 paires
+• bonusMessages.js : 5 thèmes (communication / ambiance / intimité / spiritualité / reconstruction)
+                     × 2 genres × 7 jours = 70 paires
+• Total analysé : 310 paires matin / soir
+
+RÉSULTAT GLOBAL
+───────────────
+Structure globale : TRÈS BONNE COHÉRENCE
+→ Dans la quasi-totalité des paires, le soir renvoie explicitement à l'action du matin via :
+  "As-tu fait X ?", "L'as-tu dit ?", "Avez-vous X ?" + enseignement islamique lié.
+→ Aucun cas où le soir parle d'un sujet TOTALEMENT étranger au matin.
+→ Problèmes identifiés : 8 écarts, regroupés en 3 catégories ci-dessous.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CATÉGORIE 1 — DÉCALAGE SÉMANTIQUE
+(Le soir ne reflète pas précisément l'action demandée le matin)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ ÉCART N°1 — LÉGER / Homme / Jour 11                                        │
+├─────────────────────────────────────────────────────────────────────────────┤
+│ Texte matin   : "Si une tension monte aujourd'hui, quitte la pièce          │
+│                  5 MINUTES avant de répondre."                              │
+│ Texte soir    : "As-tu pu t'arrêter ? 'Le fort est celui qui se maîtrise   │
+│                  dans la colère.' — 5 SECONDES de pause évitent des         │
+│                  semaines de regret."                                        │
+│                                                                             │
+│ Problème détecté : Contradiction de durée dans la même paire.               │
+│   Le matin prescrit une pause de 5 MINUTES ; le soir la résume à            │
+│   5 SECONDES. Ce n'est pas la même technique. Un utilisateur qui             │
+│   lit les deux messages le même jour sera perturbé par l'incohérence.      │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ ÉCART N°2 — LÉGER / Homme / Jour 24                                        │
+├─────────────────────────────────────────────────────────────────────────────┤
+│ Texte matin   : "Avant de parler dans un moment tendu, pose-toi :           │
+│                  'Ce mot va-t-il CONSTRUIRE ou DÉTRUIRE ?'"                 │
+│ Texte soir    : "As-tu pu T'ARRÊTER ? 'Une parole bonne est comme une      │
+│                  aumône.' — Choisir ses mots est un art spirituel."         │
+│                                                                             │
+│ Problème détecté : Glissement de sens entre matin et soir.                  │
+│   Le matin propose un exercice INTROSPECTIF (se poser une question          │
+│   mentale avant de parler). Le soir vérifie si l'utilisateur a "pu          │
+│   s'arrêter", ce qui évoque une interruption physique/comportementale,      │
+│   pas une réflexion interne. La question de soirée idéale serait :          │
+│   "As-tu posé cette question avant de répondre ?"                           │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ ÉCART N°3 — LÉGER / Femme / Jour 24                                        │
+├─────────────────────────────────────────────────────────────────────────────┤
+│ Texte matin   : "Avant de parler dans un moment tendu, demande-toi :        │
+│                  'Ce mot va-t-il construire ou détruire ?'"                 │
+│ Texte soir    : "As-tu pu T'ARRÊTER ? 'Une parole bonne est comme une      │
+│                  aumône.' — Choisir ses mots est un art spirituel."         │
+│                                                                             │
+│ Problème détecté : Identique à l'Écart N°2 (version féminine).             │
+│   Même glissement entre "exercice introspectif" (matin) et                  │
+│   "interruption comportementale" (soir). Le soir est un copier-coller       │
+│   de la version homme sans adaptation.                                      │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CATÉGORIE 2 — DOUBLONS DE CONTENU ENTRE JOURS CONSÉCUTIFS
+(Deux matins prescrivent la même action ; les soirs sont chacun cohérents
+avec leur matin respectif, mais la répétition nuit à la progression)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ ÉCART N°4 — MODÉRÉ / Homme / Jours 16 & 17 (doublons quasi-identiques)    │
+├─────────────────────────────────────────────────────────────────────────────┤
+│ Jour 16 matin : "Propose une sortie simple ensemble. Une promenade.          │
+│                  Changez de cadre."                                          │
+│ Jour 16 soir  : "L'avez-vous fait ? Sortir de l'espace du conflit aide à   │
+│                  se voir autrement, sans les associations négatives du       │
+│                  foyer."                                                     │
+│                 → COHÉRENT en interne.                                       │
+│                                                                             │
+│ Jour 17 matin : "Propose à ta femme une sortie simple ce week-end —         │
+│                  une promenade, un café. L'intention de créer un moment      │
+│                  rien que pour vous deux suffit."                            │
+│ Jour 17 soir  : "As-tu proposé ce moment ? 'Offrez-vous des cadeaux, vous  │
+│                  vous aimerez davantage.' — Créer des espaces de légèreté   │
+│                  brise les cycles négatifs."                                 │
+│                 → COHÉRENT en interne.                                       │
+│                                                                             │
+│ Problème détecté : Les deux matins prescrivent EXACTEMENT la même action    │
+│   (sortie simple / promenade / café) deux jours consécutifs.                │
+│   L'utilisateur reçoit deux demandes identiques. Le soir de Jour 16         │
+│   demande déjà "L'avez-vous fait ?" ; le matin de Jour 17 relance           │
+│   la même mission. Cela crée une confusion sur la progression du plan.      │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ ÉCART N°5 — GRAVE / Homme / Jours 1 & 6 (quasi-doublon à 5 jours d'écart) │
+├─────────────────────────────────────────────────────────────────────────────┤
+│ Jour 1 matin  : "Commence par toi : fais de l'istighfar et demande          │
+│                  sincèrement à Allah de t'aider à changer. Puis dis-toi :   │
+│                  'Qu'est-ce que j'ai fait qui a contribué à cette            │
+│                  situation ?'"                                               │
+│ Jour 1 soir   : "As-tu fait cet istighfar ? Avant de changer la relation,  │
+│                  commence par toi."                                          │
+│                                                                             │
+│ Jour 6 matin  : "Fais 100 istighfar. Réfléchis à ta part de responsabilité │
+│                  dans la crise. Sans te justifier. Écris sur papier : 'Ma   │
+│                  part dans ce qui s'est passé : [liste honnête].'"          │
+│ Jour 6 soir   : "As-tu fait cet examen ? L'auto-examen sincère précède      │
+│                  tout changement durable."                                   │
+│                                                                             │
+│ Problème détecté : L'action fondamentale est identique (istighfar +         │
+│   auto-examen de responsabilité) aux jours 1 et 6. La variation             │
+│   (ajouter une liste écrite) est minime. Un utilisateur en crise grave      │
+│   pourrait percevoir une stagnation pédagogique. Les soirs sont cohérents   │
+│   avec leurs matins respectifs mais le doublon de fond reste problématique. │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ ÉCART N°6 — GRAVE / Femme / Jours 1 & 6 (même quasi-doublon)              │
+├─────────────────────────────────────────────────────────────────────────────┤
+│ Jour 1 matin  : "Commence par toi : fais de l'istighfar et demande          │
+│                  sincèrement à Allah de t'aider à changer."                 │
+│ Jour 1 soir   : "As-tu fait cet istighfar ? Avant de changer la relation,  │
+│                  commence par toi. C'est la seule voie réelle."             │
+│                                                                             │
+│ Jour 6 matin  : "Fais 100 istighfar. Réfléchis à ta part de responsabilité │
+│                  dans la crise. Sans te justifier."                          │
+│ Jour 6 soir   : "As-tu fait cet examen ? L'auto-examen sincère précède      │
+│                  tout changement durable."                                   │
+│                                                                             │
+│ Problème détecté : Identique à l'Écart N°5 (version féminine).             │
+│   Même quasi-doublon entre les jours 1 et 6.                                │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CATÉGORIE 3 — INCOHÉRENCES CHRONOLOGIQUES DANS LE CONTENU DU MATIN
+(Le matin référence un nombre de jours incorrect par rapport à la position
+réelle dans le programme ; les paires matin/soir sont internes cohérentes
+mais l'ancrage temporel est erroné)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ ÉCART N°7 — MODÉRÉ / Femme / Jour 28                                       │
+├─────────────────────────────────────────────────────────────────────────────┤
+│ Texte matin   : "Prépare quelque chose de spécial POUR DEMAIN —             │
+│                  30 JOURS DE TRAVAIL méritent d'être célébrés."             │
+│ Texte soir    : "C'est prévu ? Célébrer les étapes renforce la motivation   │
+│                  pour continuer."                                            │
+│                                                                             │
+│ Problème détecté : Incohérence chronologique.                               │
+│   • Ce message est envoyé le JOUR 28.                                        │
+│   • "Pour demain" = Jour 29. Or le Jour 29 (dans le plan femme modérée)     │
+│     est : "Proposez de renouveler symboliquement votre engagement."         │
+│     → Ce n'est pas une célébration.                                          │
+│   • La vraie célébration des 30 jours est au JOUR 30.                        │
+│   • Le matin du Jour 28 demande de préparer "pour demain" une célébration   │
+│     de 30 jours, mais demain (Jour 29) n'est pas la célébration.            │
+│   • Le soir est cohérent avec le matin, mais le matin lui-même est          │
+│     chronologiquement erroné.                                               │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ ÉCART N°8 — GRAVE / Homme & Femme / Jour 28                                │
+├─────────────────────────────────────────────────────────────────────────────┤
+│ Texte matin   : "Prépare quelque chose de spécial POUR DEMAIN —             │
+│                  30 JOURS DANS UNE CRISE méritent d'être reconnus."         │
+│ Texte soir    : "C'est prévu ? Célébrer même dans la crise, c'est résister  │
+│                  à la tentation de tout abandonner."                         │
+│                                                                             │
+│ Problème détecté : Même incohérence chronologique que l'Écart N°7.          │
+│   • Ce message est au JOUR 28.                                               │
+│   • Jour 29 (grave H & F) = "Si le moment est venu, proposez un             │
+│     renouvellement de votre engagement." → pas une célébration.             │
+│   • La fête de 30 jours est au JOUR 30.                                      │
+│   • Le "pour demain" est donc décalé d'un jour par rapport à l'intention.   │
+│   • Présent à l'identique dans la version homme ET femme du plan grave.     │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+TABLEAU RÉCAPITULATIF DES ÉCARTS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+N°  Fichier          Niveau/Thème  Genre   Jour(s)  Catégorie               Sévérité
+──  ──────────────   ────────────  ─────   ───────  ──────────────────────  ────────
+1   notifMessages    Léger         Homme   11       Décalage sémantique     MOYEN
+                                                    (5 min → 5 sec)
+2   notifMessages    Léger         Homme   24       Décalage sémantique     FAIBLE
+                                                    (introspection → arrêt)
+3   notifMessages    Léger         Femme   24       Décalage sémantique     FAIBLE
+                                                    (introspection → arrêt)
+4   notifMessages    Modéré        Homme   16-17    Doublon de contenu      MOYEN
+                                                    (sortie × 2 jours)
+5   notifMessages    Grave         Homme   1 & 6    Quasi-doublon           FAIBLE
+                                                    (istighfar + auto-exam)
+6   notifMessages    Grave         Femme   1 & 6    Quasi-doublon           FAIBLE
+                                                    (istighfar + auto-exam)
+7   notifMessages    Modéré        Femme   28       Incohérence chrono.     MOYEN
+                                                    ("pour demain" ≠ fête)
+8   notifMessages    Grave         H & F   28       Incohérence chrono.     MOYEN
+                                                    ("pour demain" ≠ fête)
+
+Légende sévérité :
+  FAIBLE  → Lisible, cohérent thématiquement, formulation légèrement imprécise
+  MOYEN   → Peut créer de la confusion chez l'utilisateur
+  ÉLEVÉ   → (aucun cas trouvé)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTIONS SANS AUCUN ÉCART
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+• Léger Homme    : Jours 1-10, 12-23, 25-40       → 37/40 jours parfaits ✓
+• Léger Femme    : Jours 1-23, 25-40               → 38/40 jours parfaits ✓
+• Modéré Homme   : Jours 1-15, 18-40               → 38/40 jours parfaits ✓
+• Modéré Femme   : Jours 1-27, 29-40               → 39/40 jours parfaits ✓
+• Grave Homme    : Jours 2-5, 7-27, 29-40          → 37/40 jours parfaits ✓
+• Grave Femme    : Jours 2-5, 7-27, 29-40          → 37/40 jours parfaits ✓
+
+• BONUS Communication  H & F  Jours 1-7  → 14/14 paires parfaites ✓
+• BONUS Ambiance       H & F  Jours 1-7  → 14/14 paires parfaites ✓
+• BONUS Intimité       H & F  Jours 1-7  → 14/14 paires parfaites ✓
+• BONUS Spiritualité   H & F  Jours 1-7  → 14/14 paires parfaites ✓
+• BONUS Reconstruction H & F  Jours 1-7  → 14/14 paires parfaites ✓
+
+→ Les 70 paires bonus (bonusMessages.js) sont toutes PARFAITEMENT COHÉRENTES.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CORRECTIONS SUGGÉRÉES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Écart N°1 — LÉGER HOMME Jour 11 (soir)
+  AVANT : "...5 secondes de pause évitent des semaines de regret."
+  APRÈS  : "...5 minutes de recul évitent des semaines de regret."
+
+Écart N°2 — LÉGER HOMME Jour 24 (soir)
+  AVANT : "As-tu pu t'arrêter ?"
+  APRÈS  : "As-tu pu te poser la question avant de parler ?"
+
+Écart N°3 — LÉGER FEMME Jour 24 (soir)
+  AVANT : "As-tu pu t'arrêter ?"
+  APRÈS  : "As-tu pu te poser la question avant de parler ?"
+
+Écart N°4 — MODÉRÉ HOMME Jour 17 (matin)
+  L'action du Jour 17 est quasi-identique au Jour 16 (sortie/promenade).
+  Suggestion : remplacer le matin du Jour 17 par une action distincte, ex :
+  "Fais-lui une surprise à la maison ce soir : prépare son plat préféré
+  ou arrange la pièce avec soin pour créer un espace de détente."
+
+Écart N°5 — GRAVE HOMME Jour 6 (matin)
+  Différencier davantage de Jour 1 en insistant sur l'aspect ÉCRIT et
+  sur une réflexion plus ciblée (actes spécifiques, non juste l'attitude).
+  Ex : "Écris précisément 3 comportements passés qui ont blessé ta femme.
+  Pas en général — trois moments datés et concrets."
+
+Écart N°6 — GRAVE FEMME Jour 6 : même correction que N°5.
+
+Écart N°7 — MODÉRÉ FEMME Jour 28 (matin)
+  AVANT : "Prépare quelque chose de spécial pour demain — 30 jours de
+           travail méritent d'être célébrés."
+  APRÈS  : "Prépare quelque chose de spécial pour dans 2 jours — 30 jours
+            de travail méritent d'être célébrés ensemble."
+  Ou simplement : supprimer "pour demain" et garder "cette semaine".
+
+Écart N°8 — GRAVE H & F Jour 28 (matin)
+  AVANT : "Prépare quelque chose de spécial pour demain — 30 jours dans
+           une crise méritent d'être reconnus."
+  APRÈS  : "Prépare quelque chose de spécial pour dans 2 jours — 30 jours
+            dans une crise méritent d'être reconnus."
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CONCLUSION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Sur 310 paires matin/soir analysées :
+  • 302 paires (97,4 %) : cohérence complète — le soir renvoie explicitement
+    à l'action du matin et l'ancre dans une perspective islamique.
+  • 8 écarts identifiés (2,6 %), répartis en :
+      - 3 décalages sémantiques (formulation imprécise)
+      - 2 doublons de contenu (action répétée entre jours)
+      - 3 incohérences chronologiques ("pour demain" mal positionné)
+  • 0 cas où le soir parle d'un sujet TOTALEMENT différent du matin.
+
+Les bonus (bonusMessages.js) sont sans aucun écart — cohérence parfaite.
+Les problèmes identifiés sont tous dans notifMessages.js et tous corrigeables
+par des ajustements de formulation mineurs.
