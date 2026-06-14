@@ -354,7 +354,7 @@ export default function ProfileScreen() {
               <Text style={styles.codeValue}>{monCode}</Text>
               <TouchableOpacity
                 onPress={() => Share.share({
-                  message: `Rejoins-moi sur NoorCouple 🤍\n\nCode : ${monCode}\n\nTélécharge l'app : https://play.google.com/store/apps/details?id=com.maj23ch.sakinaapp`
+                  message: `Rejoins-moi sur NoorCouple 🤍\n\nCode : ${monCode}\n\nTélécharge l'app : https://play.google.com/store/apps/details?id=com.casquedev.noorcouple`
                 })}
                 style={styles.shareCodeBtn}
               >

@@ -336,7 +336,7 @@ export default function QuestionsScreen({ navigation }) {
   const partagerCode = async () => {
     try {
       await Share.share({
-        message: `Rejoins-moi sur NoorCouple pour nos questions du jour en couple 🤍\n\nCode : ${duoCode}\n\nTélécharge l'app : https://play.google.com/store/apps/details?id=com.maj23ch.sakinaapp`,
+        message: `Rejoins-moi sur NoorCouple pour nos questions du jour en couple 🤍\n\nCode : ${duoCode}\n\nTélécharge l'app : https://play.google.com/store/apps/details?id=com.casquedev.noorcouple`,
       });
     } catch (e) { console.log('Share error:', e); }
   };

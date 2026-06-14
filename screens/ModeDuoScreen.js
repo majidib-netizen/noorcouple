@@ -147,7 +147,7 @@ export default function ModeDuoScreen({ navigation }) {
   const partagerCode = async () => {
     try {
       await Share.share({
-        message: `Rejoins-moi sur NoorCouple pour notre plan de couple 🤍\n\nMon code d'invitation : ${monCode}\n\n📱 Télécharge l'app gratuitement :\nhttps://play.google.com/store/apps/details?id=com.maj23ch.sakinaapp\n\nUne fois installée, entre mon code dans l'onglet "Duo".`,
+        message: `Rejoins-moi sur NoorCouple pour notre plan de couple 🤍\n\nMon code d'invitation : ${monCode}\n\n📱 Télécharge l'app gratuitement :\nhttps://play.google.com/store/apps/details?id=com.casquedev.noorcouple\n\nUne fois installée, entre mon code dans l'onglet "Duo".`,
         title: 'Invitation NoorCouple — Mode Duo',
       });
     } catch (e) { console.log(e); }

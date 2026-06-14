@@ -227,7 +227,7 @@ export default function MonPlanScreen({ navigation }) {
   const partagerCodePlan = async () => {
     try {
       await Share.share({
-        message: `Rejoins-moi pour notre plan conjugal de 40 jours 🤍\n\nCode : ${planDuoCode}\n\nTélécharge l'app : https://play.google.com/store/apps/details?id=com.maj23ch.sakinaapp`,
+        message: `Rejoins-moi pour notre plan conjugal de 40 jours 🤍\n\nCode : ${planDuoCode}\n\nTélécharge l'app : https://play.google.com/store/apps/details?id=com.casquedev.noorcouple`,
       });
     } catch (e) { console.log('Share error:', e); }
   };

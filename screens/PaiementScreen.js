@@ -70,7 +70,7 @@ export default function PaiementScreen() {
         <View style={styles.hero}>
           <Text style={styles.heroTitle}>NOORCOUPLE</Text>
           <Text style={styles.heroTitre}>NoorCouple</Text>
-          <Text style={styles.heroSous}>سكينة — La sérénité dans ton foyer</Text>
+          <Text style={styles.heroSous}>نور — La sérénité dans ton foyer</Text>
         </View>
 
         {/* Prix */}
