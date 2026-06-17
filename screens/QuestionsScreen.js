@@ -671,6 +671,13 @@ export default function QuestionsScreen({ navigation }) {
           {/* Questions du jour */}
           {question && (
             <>
+              {/* Mention confidentialité duo */}
+              {duoActif && (
+                <Text style={{ fontSize: 12, color: '#666', textAlign: 'center', marginBottom: 12, fontStyle: 'italic', paddingHorizontal: 16 }}>
+                  {t('questions.confidentialite')}
+                </Text>
+              )}
+
               {/* Carte question */}
               <View style={[s.questionCard, { borderLeftColor: themeColor }]}>
                 <View style={s.questionTop}>

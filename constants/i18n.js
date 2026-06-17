@@ -231,6 +231,7 @@ export const translations = {
     'questions.reveler': 'Révéler nos réponses',
     'questions.ma_reponse': 'Ma réponse',
     'questions.reponse_conjoint': 'Réponse de votre conjoint(e)',
+    'questions.confidentialite': '🔒 Vos réponses sont chiffrées avec un code propre à votre couple.',
 
     // Fiches
     'fiches.titre': 'Fiches pratiques',
@@ -620,6 +621,7 @@ export const translations = {
     'questions.reveler': 'Reveal our answers',
     'questions.ma_reponse': 'My answer',
     'questions.reponse_conjoint': "Your spouse's answer",
+    'questions.confidentialite': '🔒 Your responses are encrypted with a code unique to your couple.',
 
     // Fiches
     'fiches.titre': 'Practical guides',
