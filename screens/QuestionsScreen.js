@@ -166,6 +166,35 @@ export default function QuestionsScreen({ navigation }) {
     };
   }, [duoActif, duoCode]);
 
+  // ─── Polling de secours : attend la réponse du conjoint après ma propre réponse ─
+  useEffect(() => {
+    if (!duoActif) return;
+    if (!sauvegarde) return;
+    if (doubleReponduAujourdhui) return;
+
+    console.log('[DUO POLLING] Activation - polling de secours toutes les 3s');
+
+    let pollCount = 0;
+    const MAX_POLLS = 100; // 5 minutes max (100 × 3s)
+
+    const pollInterval = setInterval(async () => {
+      pollCount++;
+      if (pollCount >= MAX_POLLS) {
+        console.log('[DUO POLLING] Timeout atteint, arrêt');
+        clearInterval(pollInterval);
+        return;
+      }
+      const deuxRepondu = await verifierDoubleReponse(jour);
+      if (deuxRepondu) {
+        console.log('[DUO POLLING] Conjoint a répondu, affichage bouton');
+        setDoubleReponduAujourdhui(true);
+        clearInterval(pollInterval);
+      }
+    }, 3000);
+
+    return () => clearInterval(pollInterval);
+  }, [duoActif, doubleReponduAujourdhui, sauvegarde, jour]);
+
   useFocusEffect(
     React.useCallback(() => {
       if (!duoActif) return;
@@ -235,9 +264,10 @@ export default function QuestionsScreen({ navigation }) {
     const g = await AsyncStorage.getItem('genre');
     setGenre(g || '');
 
-    // Duo — auto-générer le code si absent
+    // Duo — obtenir le code correct via determinerRole (gère initiateur ET conjoint)
+    const { code: roleCode } = await determinerRoleExport();
     const storedCode = await AsyncStorage.getItem('duo_code');
-    const code = storedCode || await obtenirOuCreerCode();
+    const code = roleCode || storedCode || await obtenirOuCreerCode();
     setDuoCode(code);
     setCodeGenere(true);
 
