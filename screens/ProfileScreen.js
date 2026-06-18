@@ -4,9 +4,10 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { COLORS, SIZES, RADIUS, SHADOW } from '../constants/theme';
 import { appReset } from '../utils/appState';
-import { scheduleNotification, scheduleNotificationsPlan, annulerNotificationsQuestions, annulerNotificationsPlan, envoyerNotificationTest } from '../utils/notifications';
+import { scheduleNotification, scheduleNotificationsPlan, annulerNotificationsQuestions, annulerNotificationsPlan } from '../utils/notifications';
 import { useLanguage } from '../context/LanguageContext';
 import { rejoindreAvecCode, regenererCodeDuo } from '../utils/duo';
+import { supabase } from '../config/supabase';
 
 // ─── TimePickerCard ────────────────────────────────────────────────────────────
 const TimePickerCard = ({ label, heure, minutes, ampm, onHeureChange, onMinutesChange, onAmPmChange, couleur, langue }) => {
@@ -132,6 +133,7 @@ export default function ProfileScreen() {
   const [editPrenom, setEditPrenom] = useState(false);
   const [monCode, setMonCode] = useState('');
   const [duoConjoint, setDuoConjoint] = useState('');
+  const [conjointConnecte, setConjointConnecte] = useState(false);
   const [codeDuoInput, setCodeDuoInput] = useState('');
   const [joinLoading, setJoinLoading] = useState(false);
   const [notifPlan, setNotifPlan] = useState(true);
@@ -146,6 +148,21 @@ export default function ProfileScreen() {
 
   useEffect(() => { loadData(); }, []);
 
+  useEffect(() => {
+    if (!monCode || conjointConnecte) return;
+    const interval = setInterval(async () => {
+      try {
+        const { data } = await supabase
+          .from('duos')
+          .select('conjoint')
+          .eq('code', monCode)
+          .single();
+        if (data && data.conjoint) setConjointConnecte(true);
+      } catch (_) {}
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [monCode, conjointConnecte]);
+
   const loadData = async () => {
     const g   = await AsyncStorage.getItem('genre') || 'homme';
     const p   = await AsyncStorage.getItem('prenom') || '';
@@ -158,7 +175,17 @@ export default function ProfileScreen() {
     const hs  = await AsyncStorage.getItem('notif_heure_soir');
     setGenre(g);
     setPrenom(p);
-    if (dc) setMonCode(dc);
+    if (dc) {
+      setMonCode(dc);
+      try {
+        const { data: duoData } = await supabase
+          .from('duos')
+          .select('conjoint')
+          .eq('code', dc)
+          .single();
+        if (duoData && duoData.conjoint) setConjointConnecte(true);
+      } catch (_) {}
+    }
     if (dcj) setDuoConjoint(dcj);
     setNotifPlan(np !== 'false');
     setNotifQuestions(nq !== 'false');
@@ -269,15 +296,6 @@ export default function ProfileScreen() {
     }
   };
 
-  const testerNotifHandler = async () => {
-    try {
-      await envoyerNotificationTest();
-      Alert.alert(t('profil.test_envoye'), t('profil.test_msg'));
-    } catch (e) {
-      Alert.alert(t('generic.erreur'), t('generic.erreur'));
-    }
-  };
-
   const resetApp = () => {
     Alert.alert(
       t('profil.reinitialiser'),
@@ -352,6 +370,11 @@ export default function ProfileScreen() {
             <View style={styles.codeCard}>
               <Text style={styles.codeLabel}>{t('profil.mon_code_duo')}</Text>
               <Text style={styles.codeValue}>{monCode}</Text>
+              {conjointConnecte && (
+                <View style={{ backgroundColor: '#E8F5E9', padding: 8, borderRadius: 8, marginTop: 4, flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
+                  <Text style={{ color: '#2E7D32', fontSize: 14, fontWeight: '500' }}>✅ {t('duo.duo_actif')}</Text>
+                </View>
+              )}
               <TouchableOpacity
                 onPress={() => Share.share({
                   message: `Rejoins-moi sur NoorCouple 🤍\n\nCode : ${monCode}\n\nTélécharge l'app : https://play.google.com/store/apps/details?id=com.casquedev.noorcouple`
@@ -526,9 +549,6 @@ export default function ProfileScreen() {
             />
           </View>
 
-          <TouchableOpacity style={styles.testBtn} onPress={testerNotifHandler}>
-            <Text style={styles.testBtnTxt}>🔔 {t('profil.tester_notif')}</Text>
-          </TouchableOpacity>
         </View>
 
         {/* À propos */}
