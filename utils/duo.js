@@ -154,7 +154,13 @@ export const rejoindreAvecCode = async (code) => {
 
     // Cas : l'utilisateur est déjà membre de ce duo → laisser passer
     if (data.initiateur === user.email || data.conjoint === user.email) {
-      await AsyncStorage.setItem('duo_code_conjoint', codeNorm);
+      if (data.conjoint === user.email) {
+        await AsyncStorage.setItem('duo_code_conjoint', codeNorm);
+      } else {
+        // Initiateur : préserver duo_code, nettoyer un éventuel duo_code_conjoint parasite
+        await AsyncStorage.setItem('duo_code', codeNorm);
+        await AsyncStorage.removeItem('duo_code_conjoint');
+      }
       return { succes: true, dejaMembre: true };
     }
 
@@ -295,12 +301,12 @@ export const sauvegarderReponseDuo = async (jourActuel, texteReponse) => {
       date: new Date().toISOString(),
     };
 
-    const { error } = await supabase
+    const { error, count } = await supabase
       .from('duos')
       .update({ [champ]: reponsesExistantes })
       .eq('code', code);
 
-    console.log('Update result:', error ? error.message : 'OK');
+    console.log('[DUO] Update réponse:', error?.message || 'OK', '| rows:', count);
   } catch (e) {
     console.log('sauvegarderReponseDuo error:', e);
   }

@@ -6,8 +6,8 @@ import {
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { COLORS, SIZES, RADIUS, SHADOW } from '../constants/theme';
 import { useLanguage } from '../context/LanguageContext';
-import { DIAGNOSTIC_QUESTIONS, calculerNiveau } from '../constants/planData';
-import { obtenirOuCreerCode, verifierDuoActif } from '../utils/duo';
+import { DIAGNOSTIC_QUESTIONS, calculerNiveau, detecterFailles } from '../constants/planData';
+import { obtenirOuCreerCode, verifierDuoActif, sauvegarderDiagnosticDuo } from '../utils/duo';
 import { supabase } from '../config/supabase';
 import InscriptionScreen from './InscriptionScreen';
 
@@ -438,9 +438,13 @@ export default function OnboardingScreen({ navigation, onDone }) {
         try {
           const total = Object.values(nouvellesReponses).reduce((a, b) => a + b, 0);
           const niv = calculerNiveau(total);
+          const f = detecterFailles(nouvellesReponses);
           await AsyncStorage.setItem('plan_reponses', JSON.stringify(nouvellesReponses));
           await AsyncStorage.setItem('plan_niveau', niv);
           await AsyncStorage.setItem('questions_diagnostic_fait', 'true');
+          await sauvegarderDiagnosticDuo(niv, f, nouvellesReponses).catch(e =>
+            console.log('Diag duo save error:', e)
+          );
           await finishOnboarding(intention === 'periode_delicate' ? 'plan' : 'questions');
         } catch (e) { console.log('Erreur diagnostic save:', e); }
       }

@@ -197,8 +197,12 @@ export default function QuestionsScreen({ navigation }) {
 
   useFocusEffect(
     React.useCallback(() => {
-      if (!duoActif) return;
       const check = async () => {
+        if (!duoActif) {
+          const nowActif = await verifierDuoActif();
+          if (nowActif) setDuoActif(true);
+          return;
+        }
         const deuxRepondu = await verifierDoubleReponse(jour);
         setDoubleReponduAujourdhui(deuxRepondu);
         if (joursReveles[jour]) {
