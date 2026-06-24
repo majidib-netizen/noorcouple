@@ -168,19 +168,6 @@ export default function InscriptionScreen({ navigation, route, onDone }) {
       await AsyncStorage.setItem('prenom', prenom.trim());
       await demarrerEssai();
 
-      const codePending = await AsyncStorage.getItem('duo_code_conjoint_pending');
-      if (codePending) {
-        const resultDuo = await rejoindreAvecCode(codePending);
-        if (resultDuo.succes) {
-          await AsyncStorage.removeItem('duo_code_conjoint_pending');
-        } else {
-          Alert.alert(
-            t('duo.erreur_titre') || 'Problème avec le code Duo',
-            resultDuo.message + '\n\n' + (t('duo.code_relancer') || 'Tu peux réessayer dans ton profil → Rejoindre un duo.')
-          );
-        }
-      }
-
       const { error: signInError } = await supabase.auth.signInWithPassword({
         email: email.trim().toLowerCase(),
         password: mdp,
@@ -193,6 +180,20 @@ export default function InscriptionScreen({ navigation, route, onDone }) {
           [{ text: 'OK', onPress: () => navigation.navigate('Connexion', { redirect, isMainStack }) }]
         );
         return;
+      }
+
+      // Rejoindre le duo après session active (session requise par rejoindreAvecCode)
+      const codePending = await AsyncStorage.getItem('duo_code_conjoint_pending');
+      if (codePending) {
+        const resultDuo = await rejoindreAvecCode(codePending);
+        if (resultDuo.succes) {
+          await AsyncStorage.removeItem('duo_code_conjoint_pending');
+        } else {
+          Alert.alert(
+            t('duo.erreur_titre') || 'Problème avec le code Duo',
+            resultDuo.message + '\n\n' + (t('duo.code_relancer') || 'Tu peux réessayer dans ton profil → Rejoindre un duo.')
+          );
+        }
       }
 
       await AsyncStorage.setItem('onboarded', 'true');

@@ -6,9 +6,10 @@ import {
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { COLORS, SIZES, RADIUS, SHADOW } from '../constants/theme';
 import { useLanguage } from '../context/LanguageContext';
-import { DIAGNOSTIC_QUESTIONS } from '../constants/planData';
+import { DIAGNOSTIC_QUESTIONS, calculerNiveau } from '../constants/planData';
 import { obtenirOuCreerCode, verifierDuoActif } from '../utils/duo';
 import { supabase } from '../config/supabase';
+import InscriptionScreen from './InscriptionScreen';
 
 const ETAPE = {
   BIENVENUE: 'bienvenue',
@@ -17,8 +18,8 @@ const ETAPE = {
   DUO_QUESTIONS: 'duo_questions',
   INVITE_CODE: 'invite_code',
   REJOINDRE_CODE: 'rejoindre_code',
+  INSCRIPTION: 'inscription',
   DIAGNOSTIC: 'diagnostic',
-  LANCEMENT_PLAN: 'lancement_plan',
 };
 
 const STEP_NUMBER = {
@@ -27,7 +28,8 @@ const STEP_NUMBER = {
   [ETAPE.DUO_QUESTIONS]: 2,
   [ETAPE.INVITE_CODE]: 3,
   [ETAPE.REJOINDRE_CODE]: 3,
-  [ETAPE.DIAGNOSTIC]: 4,
+  [ETAPE.INSCRIPTION]: 4,
+  [ETAPE.DIAGNOSTIC]: 5,
 };
 
 export default function OnboardingScreen({ navigation, onDone }) {
@@ -40,6 +42,7 @@ export default function OnboardingScreen({ navigation, onDone }) {
   const [diagIndex, setDiagIndex] = useState(0);
   const [diagReponses, setDiagReponses] = useState({});
   const [loadingCode, setLoadingCode] = useState(false);
+  const [prevEtape, setPrevEtape] = useState(null);
 
   useEffect(() => {
     try {
@@ -84,7 +87,10 @@ export default function OnboardingScreen({ navigation, onDone }) {
     verifierActivationDuo();
   }, []);
 
-  const goTo = (e) => setEtape(e);
+  const goTo = (e) => {
+    if (e === ETAPE.INSCRIPTION) setPrevEtape(etape);
+    setEtape(e);
+  };
 
   const goBack = () => {
     const backs = {
@@ -92,7 +98,12 @@ export default function OnboardingScreen({ navigation, onDone }) {
       [ETAPE.DUO_QUESTIONS]: ETAPE.INTENTION,
       [ETAPE.INVITE_CODE]: intention === 'periode_delicate' ? ETAPE.MODE_PLAN : ETAPE.DUO_QUESTIONS,
       [ETAPE.REJOINDRE_CODE]: intention === 'periode_delicate' ? ETAPE.MODE_PLAN : ETAPE.DUO_QUESTIONS,
-      [ETAPE.DIAGNOSTIC]: ETAPE.DUO_QUESTIONS,
+      [ETAPE.INSCRIPTION]: prevEtape || (
+        intention === 'periode_delicate'
+          ? (modePlan === 'solo' ? ETAPE.MODE_PLAN : ETAPE.INVITE_CODE)
+          : ETAPE.DUO_QUESTIONS
+      ),
+      [ETAPE.DIAGNOSTIC]: ETAPE.INSCRIPTION,
     };
     setEtape(backs[etape] || ETAPE.INTENTION);
   };
@@ -112,7 +123,7 @@ export default function OnboardingScreen({ navigation, onDone }) {
     if (!stepNumber) return <View style={s.topBarSpacer} />;
     return (
       <View style={s.progressWrap}>
-        {[1, 2, 3, 4].map(n => (
+        {[1, 2, 3, 4, 5].map(n => (
           <View key={n} style={[s.progressSegment, n <= stepNumber && s.progressActive]} />
         ))}
       </View>
@@ -120,7 +131,7 @@ export default function OnboardingScreen({ navigation, onDone }) {
   };
 
   const renderBack = () => {
-    const noBack = [ETAPE.INTENTION, ETAPE.LANCEMENT_PLAN];
+    const noBack = [ETAPE.INTENTION];
     if (noBack.includes(etape)) return <View style={s.backPlaceholder} />;
     return (
       <TouchableOpacity onPress={goBack} style={s.backBtn} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
@@ -265,7 +276,7 @@ export default function OnboardingScreen({ navigation, onDone }) {
             style={[s.btn, !modePlan && s.btnDisabled]}
             disabled={!modePlan}
             onPress={() => {
-              if (modePlan === 'solo') goTo(ETAPE.LANCEMENT_PLAN);
+              if (modePlan === 'solo') goTo(ETAPE.INSCRIPTION);
               else goTo(ETAPE.INVITE_CODE);
             }}
             activeOpacity={0.85}
@@ -316,9 +327,7 @@ export default function OnboardingScreen({ navigation, onDone }) {
             style={s.secondaryBtn}
             onPress={async () => {
               await AsyncStorage.setItem('app_mode', 'solo');
-              setDiagIndex(0);
-              setDiagReponses({});
-              goTo(ETAPE.DIAGNOSTIC);
+              goTo(ETAPE.INSCRIPTION);
             }}
           >
             <Text style={s.secondaryTxt}>{t('onboarding.mode_solo')}</Text>
@@ -336,7 +345,7 @@ export default function OnboardingScreen({ navigation, onDone }) {
         : `Join me on NoorCouple with the code: ${duoCode}`;
       try { await Share.share({ message: msg }); } catch (_) {}
     };
-    const nextEtape = intention === 'periode_delicate' ? ETAPE.LANCEMENT_PLAN : ETAPE.DIAGNOSTIC;
+    const nextEtape = ETAPE.INSCRIPTION;
     return (
       <SafeAreaView style={s.container}>
         <View style={s.topBar}>
@@ -363,13 +372,7 @@ export default function OnboardingScreen({ navigation, onDone }) {
         <View style={s.footer}>
           <TouchableOpacity
             style={s.btn}
-            onPress={() => {
-              if (nextEtape === ETAPE.DIAGNOSTIC) {
-                setDiagIndex(0);
-                setDiagReponses({});
-              }
-              goTo(nextEtape);
-            }}
+            onPress={() => goTo(nextEtape)}
             activeOpacity={0.85}
           >
             <Text style={s.btnTxt}>{t('generic.continuer')}</Text>
@@ -385,7 +388,7 @@ export default function OnboardingScreen({ navigation, onDone }) {
   // ─── REJOINDRE CODE ─────────────────────────────────────────────────────────
   if (etape === ETAPE.REJOINDRE_CODE) {
     const canJoin = codeInput.replace(/-/g, '').length >= 10;
-    const nextEtape = intention === 'periode_delicate' ? ETAPE.LANCEMENT_PLAN : ETAPE.DIAGNOSTIC;
+    const nextEtape = ETAPE.INSCRIPTION;
     return (
       <SafeAreaView style={s.container}>
         <View style={s.topBar}>
@@ -410,10 +413,6 @@ export default function OnboardingScreen({ navigation, onDone }) {
             disabled={!canJoin}
             onPress={async () => {
               await AsyncStorage.setItem('duo_code_conjoint_pending', codeInput.trim().toUpperCase());
-              if (nextEtape === ETAPE.DIAGNOSTIC) {
-                setDiagIndex(0);
-                setDiagReponses({});
-              }
               goTo(nextEtape);
             }}
             activeOpacity={0.85}
@@ -437,9 +436,12 @@ export default function OnboardingScreen({ navigation, onDone }) {
         setDiagIndex(diagIndex + 1);
       } else {
         try {
+          const total = Object.values(nouvellesReponses).reduce((a, b) => a + b, 0);
+          const niv = calculerNiveau(total);
           await AsyncStorage.setItem('plan_reponses', JSON.stringify(nouvellesReponses));
+          await AsyncStorage.setItem('plan_niveau', niv);
           await AsyncStorage.setItem('questions_diagnostic_fait', 'true');
-          await finishOnboarding('questions');
+          await finishOnboarding(intention === 'periode_delicate' ? 'plan' : 'questions');
         } catch (e) { console.log('Erreur diagnostic save:', e); }
       }
     };
@@ -482,20 +484,18 @@ export default function OnboardingScreen({ navigation, onDone }) {
     );
   }
 
-  // ─── LANCEMENT PLAN ─────────────────────────────────────────────────────────
-  if (etape === ETAPE.LANCEMENT_PLAN) {
+  // ─── INSCRIPTION ────────────────────────────────────────────────────────────
+  if (etape === ETAPE.INSCRIPTION) {
     return (
-      <SafeAreaView style={s.container}>
-        <View style={s.launchCenter}>
-          <Text style={s.launchTitle}>{t('onboarding.plan_lancement_titre')}</Text>
-          <Text style={s.launchDesc}>{t('onboarding.plan_lancement_texte')}</Text>
-        </View>
-        <View style={s.footer}>
-          <TouchableOpacity style={s.btn} onPress={() => finishOnboarding('plan')} activeOpacity={0.85}>
-            <Text style={s.btnTxt}>{t('onboarding.plan_lancement_cta')}</Text>
-          </TouchableOpacity>
-        </View>
-      </SafeAreaView>
+      <InscriptionScreen
+        navigation={navigation}
+        route={{ params: {} }}
+        onDone={() => {
+          setDiagIndex(0);
+          setDiagReponses({});
+          setEtape(ETAPE.DIAGNOSTIC);
+        }}
+      />
     );
   }
 
@@ -634,16 +634,4 @@ const s = StyleSheet.create({
   encadreEtape: { fontSize: 13, color: COLORS.text, lineHeight: 22, marginVertical: 2 },
   encadreValide: { fontSize: 13, fontWeight: '600', color: COLORS.success, marginTop: 8 },
 
-  // Launch screens
-  launchCenter: {
-    flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 32,
-  },
-  launchTitle: {
-    fontSize: SIZES.xxl, fontWeight: '700', color: COLORS.text,
-    textAlign: 'center', marginBottom: 16,
-  },
-  launchDesc: {
-    fontSize: SIZES.base, color: COLORS.textSecondary,
-    textAlign: 'center', lineHeight: 26,
-  },
 });
