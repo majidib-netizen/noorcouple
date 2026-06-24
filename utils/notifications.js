@@ -10,6 +10,34 @@ Notifications.setNotificationHandler({
   }),
 });
 
+const getNotifText = async () => {
+  const langue = await AsyncStorage.getItem('app_language') || 'fr';
+  if (langue === 'en') {
+    return {
+      title: 'NoorCouple',
+      questionMatin: 'Your question of the day is waiting.',
+      questionSoir: 'Have you answered your question of the day?',
+      actionMatin: 'Your action of the day is ready.',
+      actionSoir: 'Have you completed your action of the day?',
+      niveauLeger: 'Light',
+      niveauModere: 'Moderate',
+      niveauGrave: 'Serious',
+      rappel: 'Reminder',
+    };
+  }
+  return {
+    title: 'NoorCouple',
+    questionMatin: 'Votre question du jour vous attend.',
+    questionSoir: 'Avez-vous répondu à votre question du jour ?',
+    actionMatin: 'Votre action du jour est prête.',
+    actionSoir: 'Avez-vous réalisé votre action du jour ?',
+    niveauLeger: 'Léger',
+    niveauModere: 'Modéré',
+    niveauGrave: 'Grave',
+    rappel: 'Rappel',
+  };
+};
+
 const getHeures = async () => {
   const hm = await AsyncStorage.getItem('notif_heure_matin');
   const hs = await AsyncStorage.getItem('notif_heure_soir');
@@ -48,12 +76,13 @@ export const scheduleNotification = async () => {
 
     await annulerParIdentifiant(['notif-matin', 'notif-soir']);
     const { hMatin, mMatin, hSoir, mSoir } = await getHeures();
+    const texts = await getNotifText();
 
     await Notifications.scheduleNotificationAsync({
       identifier: 'notif-matin',
       content: {
-        title: 'NoorCouple',
-        body: 'Votre question du jour vous attend.',
+        title: texts.title,
+        body: texts.questionMatin,
         sound: true,
       },
       trigger: {
@@ -67,8 +96,8 @@ export const scheduleNotification = async () => {
     await Notifications.scheduleNotificationAsync({
       identifier: 'notif-soir',
       content: {
-        title: 'NoorCouple',
-        body: 'Avez-vous répondu à votre question du jour ?',
+        title: texts.title,
+        body: texts.questionSoir,
         sound: true,
       },
       trigger: {
@@ -94,13 +123,19 @@ export const scheduleNotificationsPlan = async (niveau, jourActuel, genre, faill
 
     await annulerParIdentifiant(['plan-matin', 'plan-soir']);
     const { hMatin, mMatin, hSoir, mSoir } = await getHeures();
-    const niveauLabel = { leger: 'Léger', modere: 'Modéré', grave: 'Grave' }[niveau] || niveau;
+    const texts = await getNotifText();
+    const niveauLabelMap = {
+      leger: texts.niveauLeger,
+      modere: texts.niveauModere,
+      grave: texts.niveauGrave,
+    };
+    const niveauLabel = niveauLabelMap[niveau] || niveau;
 
     await Notifications.scheduleNotificationAsync({
       identifier: 'plan-matin',
       content: {
         title: 'NoorCouple — ' + niveauLabel,
-        body: 'Votre action du jour est prête.',
+        body: texts.actionMatin,
         sound: true,
         data: { type: 'plan', jour: jourActuel },
       },
@@ -115,8 +150,8 @@ export const scheduleNotificationsPlan = async (niveau, jourActuel, genre, faill
     await Notifications.scheduleNotificationAsync({
       identifier: 'plan-soir',
       content: {
-        title: 'NoorCouple — Rappel',
-        body: 'Avez-vous réalisé votre action du jour ?',
+        title: `NoorCouple — ${texts.rappel}`,
+        body: texts.actionSoir,
         sound: true,
         data: { type: 'plan', jour: jourActuel },
       },
@@ -132,35 +167,6 @@ export const scheduleNotificationsPlan = async (niveau, jourActuel, genre, faill
     console.log('Notifs plan programmées:', hMatin + 'h' + mMatin, 'et', hSoir + 'h' + mSoir);
   } catch (e) {
     console.log('scheduleNotificationsPlan error:', e);
-  }
-};
-
-// ─── NOTIFICATION DE TEST ─────────────────────────────────────────────────────
-export const envoyerNotificationTest = async () => {
-  if (Platform.OS === 'web') return false;
-  try {
-    const granted = await demanderPermission();
-    if (!granted) return false;
-
-    await Notifications.scheduleNotificationAsync({
-      identifier: 'notif-test-' + Date.now(),
-      content: {
-        title: 'NoorCouple — Test ✅',
-        body: 'Les notifications fonctionnent correctement !',
-        sound: true,
-      },
-      trigger: {
-        type: 'timeInterval',
-        seconds: 3,
-        repeats: false,
-      },
-    });
-
-    console.log('Notification test dans 3 secondes');
-    return true;
-  } catch (e) {
-    console.log('envoyerNotificationTest error:', e);
-    return false;
   }
 };
 
