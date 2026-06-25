@@ -3,6 +3,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import {
   View, Text, TextInput, ScrollView, StyleSheet,
   SafeAreaView, TouchableOpacity, KeyboardAvoidingView, Platform, Share, Alert, ActivityIndicator,
+  AppState, Animated,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -92,6 +93,9 @@ export default function QuestionsScreen({ navigation }) {
   const [reponseRattrapage, setReponseRattrapage] = useState('');
   const [orderedIdsRef, setOrderedIdsRef]         = useState([]);
   const [doubleReponduParJour, setDoubleReponduParJour] = useState({});
+  const [refreshing, setRefreshing] = useState(false);
+  const spinAnim = useRef(new Animated.Value(0)).current;
+  const spinLoopRef = useRef(null);
 
   const getThemeLabel = (theme) => {
     const map = {
@@ -238,6 +242,38 @@ export default function QuestionsScreen({ navigation }) {
     }
     const rep = JSON.parse(repStored);
     await loadQuestionsView(rep);
+  };
+
+  // Ref toujours à jour pour AppState (évite les closures figées)
+  const loadAllRef = useRef(loadAll);
+  useEffect(() => { loadAllRef.current = loadAll; });
+
+  // ─── Auto-refresh au retour au premier plan ──────────────────────────────────
+  useEffect(() => {
+    const sub = AppState.addEventListener('change', (nextState) => {
+      if (nextState === 'active') {
+        console.log('[AppState] App revenue au premier plan → loadAll');
+        loadAllRef.current?.();
+      }
+    });
+    return () => sub.remove();
+  }, []);
+
+  // ─── Bouton refresh ──────────────────────────────────────────────────────────
+  const spin = spinAnim.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '360deg'] });
+
+  const handleRefresh = async () => {
+    if (refreshing) return;
+    setRefreshing(true);
+    spinAnim.setValue(0);
+    spinLoopRef.current = Animated.loop(
+      Animated.timing(spinAnim, { toValue: 1, duration: 700, useNativeDriver: true })
+    );
+    spinLoopRef.current.start();
+    await loadAll();
+    spinLoopRef.current?.stop();
+    spinAnim.setValue(0);
+    setRefreshing(false);
   };
 
   // ─── Charger la vue questions après diagnostic ──────────────────────────────
@@ -659,8 +695,13 @@ export default function QuestionsScreen({ navigation }) {
           {/* Header */}
           <View style={s.header}>
             <Text style={s.titre}>{t('questions.titre')}</Text>
-            <View style={s.jourBadge}>
-              <Text style={s.jourTxt}>{t('plan.jour')} {jour}</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+              <View style={s.jourBadge}>
+                <Text style={s.jourTxt}>{t('plan.jour')} {jour}</Text>
+              </View>
+              <TouchableOpacity onPress={handleRefresh} disabled={refreshing} style={s.refreshBtn} activeOpacity={0.7}>
+                <Animated.Text style={[s.refreshIcon, { transform: [{ rotate: spin }] }]}>↻</Animated.Text>
+              </TouchableOpacity>
             </View>
           </View>
 
@@ -996,6 +1037,13 @@ const s = StyleSheet.create({
     borderWidth: 1.5, borderColor: COLORS.primary + '40',
   },
   jourTxt: { fontSize: SIZES.xs, fontWeight: '700', color: COLORS.primary },
+  refreshBtn: {
+    width: 44, height: 44, borderRadius: 22,
+    backgroundColor: COLORS.primaryLight,
+    alignItems: 'center', justifyContent: 'center',
+    borderWidth: 1.5, borderColor: COLORS.primary + '30',
+  },
+  refreshIcon: { fontSize: 20, color: COLORS.primary, fontWeight: '700', lineHeight: 22 },
 
   // Invitation duo
   inviteCard: {
