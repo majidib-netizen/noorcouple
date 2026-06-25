@@ -200,7 +200,21 @@ export default function QuestionsScreen({ navigation }) {
       const check = async () => {
         if (!duoActif) {
           const nowActif = await verifierDuoActif();
-          if (nowActif) setDuoActif(true);
+          if (nowActif) {
+            console.log('[SYNC] duo devient actif → synchronisation des réponses locales');
+            const stored = await AsyncStorage.getItem('reponses_questions');
+            const all = stored ? JSON.parse(stored) : {};
+            const jours = Object.keys(all);
+            console.log('[SYNC] réponses locales trouvées:', jours.length, 'jour(s)');
+            for (const j of jours) {
+              if (all[j]) {
+                console.log('[SYNC] push jour', j, '→ Supabase');
+                await sauvegarderReponseDuo(Number(j), all[j]);
+              }
+            }
+            console.log('[SYNC] synchronisation terminée');
+            setDuoActif(true);
+          }
           return;
         }
         const deuxRepondu = await verifierDoubleReponse(jour);
@@ -377,6 +391,9 @@ export default function QuestionsScreen({ navigation }) {
 
   // ─── Sauvegarder la réponse ──────────────────────────────────────────────────
   const envoyerReponse = async () => {
+    console.log('[ENVOI] Début envoyerReponse');
+    console.log('[ENVOI] duoActif:', duoActif, '| sauvegarde:', sauvegarde);
+    console.log('[ENVOI] reponse:', reponse?.substring(0, 20), '| jour:', jour);
     if (!reponse.trim()) return;
     const stored = await AsyncStorage.getItem('reponses_questions');
     const all = stored ? JSON.parse(stored) : {};
@@ -387,12 +404,16 @@ export default function QuestionsScreen({ navigation }) {
     // Sauvegarde chiffrée dans Supabase si duo actif
     console.log('=== envoyerReponse - duoActif:', duoActif, '| jour:', jour);
     if (duoActif) {
-      await sauvegarderReponseDuo(jour, reponse.trim());
+      console.log('[ENVOI] Appel sauvegarderReponseDuo...');
+      const result = await sauvegarderReponseDuo(jour, reponse.trim());
+      console.log('[ENVOI] Résultat sauvegarde:', result);
       const repConjoint = await getReponsesConjoint(jour);
       setReponseConjoint(repConjoint);
       const deuxRepondu = await verifierDoubleReponse(jour);
       console.log('=== doubleRepondu après save:', deuxRepondu);
       setDoubleReponduAujourdhui(deuxRepondu);
+    } else {
+      console.log('[ENVOI] Abandon: duoActif=false');
     }
 
     const ids = orderedIdsRef.length > 0 ? orderedIdsRef : QUESTIONS.map(q => q.id);
