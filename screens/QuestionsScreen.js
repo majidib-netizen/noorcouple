@@ -327,6 +327,20 @@ export default function QuestionsScreen({ navigation }) {
 
     // Vérifier si le duo est vraiment actif (les deux conjoints connectés)
     const actif = await verifierDuoActif();
+
+    if (actif && !duoActif) {
+      const stored = await AsyncStorage.getItem('reponses_questions');
+      const all = stored ? JSON.parse(stored) : {};
+      const jours = Object.keys(all);
+      if (jours.length > 0) {
+        console.log('[SYNC] loadAll détecte activation duo → sync', jours.length, 'réponse(s)');
+        for (const j of jours) {
+          if (all[j]) await sauvegarderReponseDuo(Number(j), all[j]);
+        }
+        console.log('[SYNC] sync loadAll terminé');
+      }
+    }
+
     setDuoActif(actif);
 
     // Charger les jours révélés depuis AsyncStorage
