@@ -176,10 +176,10 @@ export default function QuestionsScreen({ navigation }) {
     if (!sauvegarde) return;
     if (doubleReponduAujourdhui) return;
 
-    console.log('[DUO POLLING] Activation - polling de secours toutes les 3s');
+    console.log('[DUO POLLING] Activation - polling de secours toutes les 15s');
 
     let pollCount = 0;
-    const MAX_POLLS = 100; // 5 minutes max (100 × 3s)
+    const MAX_POLLS = 20; // 5 minutes max (20 × 15s)
 
     const pollInterval = setInterval(async () => {
       pollCount++;
@@ -194,7 +194,7 @@ export default function QuestionsScreen({ navigation }) {
         setDoubleReponduAujourdhui(true);
         clearInterval(pollInterval);
       }
-    }, 3000);
+    }, 15000);
 
     return () => clearInterval(pollInterval);
   }, [duoActif, doubleReponduAujourdhui, sauvegarde, jour]);
@@ -438,7 +438,6 @@ export default function QuestionsScreen({ navigation }) {
     setSauvegarde(true);
 
     // Sauvegarde chiffrée dans Supabase si duo actif
-    console.log('=== envoyerReponse - duoActif:', duoActif, '| jour:', jour);
     if (duoActif) {
       console.log('[ENVOI] Appel sauvegarderReponseDuo...');
       const result = await sauvegarderReponseDuo(jour, reponse.trim());
@@ -446,10 +445,10 @@ export default function QuestionsScreen({ navigation }) {
       const repConjoint = await getReponsesConjoint(jour);
       setReponseConjoint(repConjoint);
       const deuxRepondu = await verifierDoubleReponse(jour);
-      console.log('=== doubleRepondu après save:', deuxRepondu);
+      console.log('[ENVOI] doubleRepondu après save:', deuxRepondu);
       setDoubleReponduAujourdhui(deuxRepondu);
     } else {
-      console.log('[ENVOI] Abandon: duoActif=false');
+      console.log('[ENVOI] duoActif=false, sauvegarde locale uniquement');
     }
 
     const ids = orderedIdsRef.length > 0 ? orderedIdsRef : QUESTIONS.map(q => q.id);
