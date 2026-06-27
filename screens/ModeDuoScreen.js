@@ -1,4 +1,5 @@
 ﻿import React, { useState, useEffect } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
 import {
   View, Text, ScrollView, StyleSheet, SafeAreaView,
   TouchableOpacity, Alert, Share, TextInput, ActivityIndicator, Platform,
@@ -28,10 +29,13 @@ const ETAPES = {
 export default function ModeDuoScreen({ navigation }) {
   const { t } = useLanguage();
   const { acces, joursRestants, loading: loadingAcces } = useAccesPremium();
-  useEffect(() => {
-    if (loadingAcces) return;
-    if (!acces) navigation.navigate('Paywall', { contexte: 'duo' });
-  }, [acces, loadingAcces]);
+  useFocusEffect(
+    React.useCallback(() => {
+      if (!loadingAcces && !acces) {
+        navigation.navigate('Paywall', { contexte: 'duo' });
+      }
+    }, [acces, loadingAcces])
+  );
   const [etape, setEtape] = useState(ETAPES.ACCUEIL);
   const [monCode, setMonCode] = useState('');
   const [codeInput, setCodeInput] = useState('');
@@ -400,6 +404,8 @@ export default function ModeDuoScreen({ navigation }) {
       </SafeAreaView>
     );
   }
+
+  if (!acces) return null;
 
   return (
     <SafeAreaView style={s.container}>

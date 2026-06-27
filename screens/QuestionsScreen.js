@@ -60,10 +60,13 @@ export default function QuestionsScreen({ navigation }) {
   const { t, langue } = useLanguage();
   const insets = useSafeAreaInsets();
   const { acces, joursRestants, loading: loadingAcces } = useAccesPremium();
-  useEffect(() => {
-    if (loadingAcces) return;
-    if (!acces) navigation.navigate('Paywall', { contexte: 'questions' });
-  }, [acces, loadingAcces]);
+  useFocusEffect(
+    React.useCallback(() => {
+      if (!loadingAcces && !acces) {
+        navigation.navigate('Paywall', { contexte: 'questions' });
+      }
+    }, [acces, loadingAcces])
+  );
 
   // Écran global
   const [screenState, setScreenState] = useState(STATE.LOADING);
@@ -621,6 +624,8 @@ export default function QuestionsScreen({ navigation }) {
       </SafeAreaView>
     );
   }
+
+  if (!acces) return null;
 
   // ─── RENDER : Loading ────────────────────────────────────────────────────────
   if (screenState === STATE.LOADING) {

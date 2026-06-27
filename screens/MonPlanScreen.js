@@ -48,12 +48,13 @@ export default function MonPlanScreen({ navigation }) {
   const insets = useSafeAreaInsets();
   const { acces, joursRestants, loading: loadingAcces } = useAccesPremium();
 
-  useEffect(() => {
-    if (loadingAcces) return;
-    if (!acces) {
-      navigation.navigate('Paywall', { contexte: 'plan' });
-    }
-  }, [acces, loadingAcces]);
+  useFocusEffect(
+    React.useCallback(() => {
+      if (!loadingAcces && !acces) {
+        navigation.navigate('Paywall', { contexte: 'plan' });
+      }
+    }, [acces, loadingAcces])
+  );
 
   const getNiveauLabel = (n) => {
     if (n === 'leger') return langue === 'en' ? 'Light' : 'Léger';
@@ -469,6 +470,8 @@ export default function MonPlanScreen({ navigation }) {
       </SafeAreaView>
     );
   }
+
+  if (!acces) return null;
 
   return (
     <SafeAreaView style={s.container}>

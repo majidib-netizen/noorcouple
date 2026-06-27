@@ -117,6 +117,11 @@ export default function OnboardingScreen({ navigation, onDone }) {
     } catch (e) { console.log('Erreur finishOnboarding:', e); }
   };
 
+  const explorerGratuitement = async () => {
+    await AsyncStorage.setItem('onboarded', 'true');
+    if (typeof onDone === 'function') onDone();
+  };
+
   const stepNumber = STEP_NUMBER[etape];
 
   const renderProgress = () => {
@@ -181,6 +186,13 @@ export default function OnboardingScreen({ navigation, onDone }) {
             activeOpacity={0.85}
           >
             <Text style={s.bienvenueBtnTxt}>{t('onboarding.commencer')}</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={s.bienvenueExplorerBtn}
+            onPress={explorerGratuitement}
+            activeOpacity={0.7}
+          >
+            <Text style={s.bienvenueExplorerTxt}>{t('onboarding.decouvrir')}</Text>
           </TouchableOpacity>
         </View>
       </SafeAreaView>
@@ -587,6 +599,8 @@ const s = StyleSheet.create({
   bienvenueFooter: { paddingHorizontal: 24, paddingBottom: 40 },
   bienvenueBtn: { backgroundColor: COLORS.primary, borderRadius: 999, padding: 16, alignItems: 'center' },
   bienvenueBtnTxt: { fontSize: 16, fontWeight: '700', color: '#fff' },
+  bienvenueExplorerBtn: { alignItems: 'center', marginTop: 16, paddingVertical: 8 },
+  bienvenueExplorerTxt: { fontSize: 13, color: COLORS.textSecondary, textDecorationLine: 'underline' },
 
   // Invite code
   inviteCenter: { flex: 1, paddingHorizontal: 24, paddingTop: 16 },
