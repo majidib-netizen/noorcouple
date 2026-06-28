@@ -13,7 +13,7 @@ import { QUESTIONS, getQuestionByJour, buildQuestionsOrder } from '../constants/
 import { DIAGNOSTIC_QUESTIONS, detecterFailles } from '../constants/planData';
 import { scheduleNotification } from '../utils/notifications';
 import { useLanguage } from '../context/LanguageContext';
-import { useAccesPremium } from '../utils/access';
+import { accesPremium } from '../utils/access';
 import { obtenirOuCreerCode, verifierDuoActif, verifierDoubleReponse, sauvegarderReponseDuo, getReponsesConjoint, determinerRoleExport, dechiffrer } from '../utils/duo';
 import { supabase } from '../config/supabase';
 
@@ -59,13 +59,31 @@ const STATE = {
 export default function QuestionsScreen({ navigation }) {
   const { t, langue } = useLanguage();
   const insets = useSafeAreaInsets();
-  const { acces, joursRestants, loading: loadingAcces } = useAccesPremium();
+  const [acces, setAcces] = useState(null);
+  const [joursRestants, setJoursRestants] = useState(null);
+  const [loadingAcces, setLoadingAcces] = useState(true);
+
   useFocusEffect(
     React.useCallback(() => {
-      if (!loadingAcces && !acces) {
-        navigation.navigate('Paywall', { contexte: 'questions' });
-      }
-    }, [acces, loadingAcces])
+      let actif = true;
+      const verifier = async () => {
+        setLoadingAcces(true);
+        const ok = await accesPremium();
+        const dateDebut = await AsyncStorage.getItem('essai_debut');
+        let jours = null;
+        if (dateDebut) {
+          const joursEcoules = Math.floor((Date.now() - new Date(dateDebut)) / 86400000);
+          jours = Math.max(0, 5 - joursEcoules);
+        }
+        if (!actif) return;
+        setAcces(ok);
+        setJoursRestants(jours);
+        setLoadingAcces(false);
+        if (!ok) navigation.navigate('Paywall', { contexte: 'questions' });
+      };
+      verifier();
+      return () => { actif = false; };
+    }, [navigation])
   );
 
   // Écran global

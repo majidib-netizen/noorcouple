@@ -17,7 +17,7 @@ import { NOTIF_PLAN } from '../constants/notifMessages';
 import { BONUS_MESSAGES } from '../constants/bonusMessages';
 import { scheduleNotificationsPlan, reactiverNotificationsGeneriques } from '../utils/notifications';
 import { useLanguage } from '../context/LanguageContext';
-import { useAccesPremium } from '../utils/access';
+import { accesPremium } from '../utils/access';
 import { sauvegarderDiagnosticDuo, recupererNiveauDuo } from '../utils/duo';
 
 const ETAPES = {
@@ -46,14 +46,31 @@ export default function MonPlanScreen({ navigation }) {
   const [faillesEffectives, setFaillesEffectives] = useState([]);
   const { t, langue } = useLanguage();
   const insets = useSafeAreaInsets();
-  const { acces, joursRestants, loading: loadingAcces } = useAccesPremium();
+  const [acces, setAcces] = useState(null);
+  const [joursRestants, setJoursRestants] = useState(null);
+  const [loadingAcces, setLoadingAcces] = useState(true);
 
   useFocusEffect(
     React.useCallback(() => {
-      if (!loadingAcces && !acces) {
-        navigation.navigate('Paywall', { contexte: 'plan' });
-      }
-    }, [acces, loadingAcces])
+      let actif = true;
+      const verifier = async () => {
+        setLoadingAcces(true);
+        const ok = await accesPremium();
+        const dateDebut = await AsyncStorage.getItem('essai_debut');
+        let jours = null;
+        if (dateDebut) {
+          const joursEcoules = Math.floor((Date.now() - new Date(dateDebut)) / 86400000);
+          jours = Math.max(0, 5 - joursEcoules);
+        }
+        if (!actif) return;
+        setAcces(ok);
+        setJoursRestants(jours);
+        setLoadingAcces(false);
+        if (!ok) navigation.navigate('Paywall', { contexte: 'plan' });
+      };
+      verifier();
+      return () => { actif = false; };
+    }, [navigation])
   );
 
   const getNiveauLabel = (n) => {
