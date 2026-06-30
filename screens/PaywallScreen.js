@@ -25,6 +25,8 @@ export default function PaywallScreen({ navigation, route }) {
   const { t } = useLanguage();
   const contexte = route?.params?.contexte || 'plan';
   const redirect = route?.params?.redirect;
+  const onContinuer = route?.params?.onContinuer;
+  const onFermer    = route?.params?.onFermer;
 
   const titre = t(TITRE_KEYS[contexte] || 'paywall.titre_plan');
 
@@ -37,12 +39,13 @@ export default function PaywallScreen({ navigation, route }) {
   };
 
   const fermer = () => {
+    if (onFermer) { onFermer(); return; }
     navigation.navigate('Accueil');
   };
 
   const [abonnementChoisi, setAbonnementChoisi] = useState('annuel');
 
-  const demarrerEssai = () => goInscription();
+  const demarrerEssai = () => onContinuer ? onContinuer() : goInscription();
 
   return (
     <SafeAreaView style={styles.safe}>

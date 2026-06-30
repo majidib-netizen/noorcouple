@@ -10,6 +10,7 @@ import { DIAGNOSTIC_QUESTIONS, calculerNiveau, detecterFailles } from '../consta
 import { obtenirOuCreerCode, verifierDuoActif, sauvegarderDiagnosticDuo } from '../utils/duo';
 import { supabase } from '../config/supabase';
 import InscriptionScreen from './InscriptionScreen';
+import PaywallScreen from './PaywallScreen';
 
 const ETAPE = {
   BIENVENUE: 'bienvenue',
@@ -18,8 +19,9 @@ const ETAPE = {
   DUO_QUESTIONS: 'duo_questions',
   INVITE_CODE: 'invite_code',
   REJOINDRE_CODE: 'rejoindre_code',
-  INSCRIPTION: 'inscription',
   DIAGNOSTIC: 'diagnostic',
+  PAIEMENT: 'paiement',
+  INSCRIPTION: 'inscription',
 };
 
 const STEP_NUMBER = {
@@ -28,8 +30,8 @@ const STEP_NUMBER = {
   [ETAPE.DUO_QUESTIONS]: 2,
   [ETAPE.INVITE_CODE]: 3,
   [ETAPE.REJOINDRE_CODE]: 3,
-  [ETAPE.INSCRIPTION]: 4,
-  [ETAPE.DIAGNOSTIC]: 5,
+  [ETAPE.DIAGNOSTIC]: 4,
+  [ETAPE.PAIEMENT]: 5,
 };
 
 export default function OnboardingScreen({ navigation, onDone }) {
@@ -88,7 +90,7 @@ export default function OnboardingScreen({ navigation, onDone }) {
   }, []);
 
   const goTo = (e) => {
-    if (e === ETAPE.INSCRIPTION) setPrevEtape(etape);
+    setPrevEtape(etape);
     setEtape(e);
   };
 
@@ -98,12 +100,9 @@ export default function OnboardingScreen({ navigation, onDone }) {
       [ETAPE.DUO_QUESTIONS]: ETAPE.INTENTION,
       [ETAPE.INVITE_CODE]: intention === 'periode_delicate' ? ETAPE.MODE_PLAN : ETAPE.DUO_QUESTIONS,
       [ETAPE.REJOINDRE_CODE]: intention === 'periode_delicate' ? ETAPE.MODE_PLAN : ETAPE.DUO_QUESTIONS,
-      [ETAPE.INSCRIPTION]: prevEtape || (
-        intention === 'periode_delicate'
-          ? (modePlan === 'solo' ? ETAPE.MODE_PLAN : ETAPE.INVITE_CODE)
-          : ETAPE.DUO_QUESTIONS
-      ),
-      [ETAPE.DIAGNOSTIC]: ETAPE.INSCRIPTION,
+      [ETAPE.DIAGNOSTIC]: prevEtape || ETAPE.INTENTION,
+      [ETAPE.PAIEMENT]: ETAPE.DIAGNOSTIC,
+      [ETAPE.INSCRIPTION]: ETAPE.PAIEMENT,
     };
     setEtape(backs[etape] || ETAPE.INTENTION);
   };
@@ -288,7 +287,7 @@ export default function OnboardingScreen({ navigation, onDone }) {
             style={[s.btn, !modePlan && s.btnDisabled]}
             disabled={!modePlan}
             onPress={() => {
-              if (modePlan === 'solo') goTo(ETAPE.INSCRIPTION);
+              if (modePlan === 'solo') goTo(ETAPE.DIAGNOSTIC);
               else goTo(ETAPE.INVITE_CODE);
             }}
             activeOpacity={0.85}
@@ -339,7 +338,7 @@ export default function OnboardingScreen({ navigation, onDone }) {
             style={s.secondaryBtn}
             onPress={async () => {
               await AsyncStorage.setItem('app_mode', 'solo');
-              goTo(ETAPE.INSCRIPTION);
+              goTo(ETAPE.DIAGNOSTIC);
             }}
           >
             <Text style={s.secondaryTxt}>{t('onboarding.mode_solo')}</Text>
@@ -357,7 +356,7 @@ export default function OnboardingScreen({ navigation, onDone }) {
         : `Join me on NoorCouple with the code: ${duoCode}`;
       try { await Share.share({ message: msg }); } catch (_) {}
     };
-    const nextEtape = ETAPE.INSCRIPTION;
+    const nextEtape = ETAPE.DIAGNOSTIC;
     return (
       <SafeAreaView style={s.container}>
         <View style={s.topBar}>
@@ -400,7 +399,7 @@ export default function OnboardingScreen({ navigation, onDone }) {
   // ─── REJOINDRE CODE ─────────────────────────────────────────────────────────
   if (etape === ETAPE.REJOINDRE_CODE) {
     const canJoin = codeInput.replace(/-/g, '').length >= 10;
-    const nextEtape = ETAPE.INSCRIPTION;
+    const nextEtape = ETAPE.DIAGNOSTIC;
     return (
       <SafeAreaView style={s.container}>
         <View style={s.topBar}>
@@ -457,7 +456,7 @@ export default function OnboardingScreen({ navigation, onDone }) {
           await sauvegarderDiagnosticDuo(niv, f, nouvellesReponses).catch(e =>
             console.log('Diag duo save error:', e)
           );
-          await finishOnboarding(intention === 'periode_delicate' ? 'plan' : 'questions');
+          goTo(ETAPE.PAIEMENT);
         } catch (e) { console.log('Erreur diagnostic save:', e); }
       }
     };
@@ -500,6 +499,20 @@ export default function OnboardingScreen({ navigation, onDone }) {
     );
   }
 
+  // ─── PAIEMENT ───────────────────────────────────────────────────────────────
+  if (etape === ETAPE.PAIEMENT) {
+    return (
+      <PaywallScreen
+        navigation={navigation}
+        route={{ params: {
+          contexte: intention === 'periode_delicate' ? 'plan' : 'questions',
+          onContinuer: () => goTo(ETAPE.INSCRIPTION),
+          onFermer: () => goTo(ETAPE.DIAGNOSTIC),
+        }}}
+      />
+    );
+  }
+
   // ─── INSCRIPTION ────────────────────────────────────────────────────────────
   if (etape === ETAPE.INSCRIPTION) {
     return (
@@ -507,9 +520,7 @@ export default function OnboardingScreen({ navigation, onDone }) {
         navigation={navigation}
         route={{ params: {} }}
         onDone={() => {
-          setDiagIndex(0);
-          setDiagReponses({});
-          setEtape(ETAPE.DIAGNOSTIC);
+          finishOnboarding(intention === 'periode_delicate' ? 'plan' : 'questions');
         }}
       />
     );
