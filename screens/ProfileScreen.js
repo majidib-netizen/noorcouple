@@ -136,6 +136,9 @@ export default function ProfileScreen() {
   const [conjointConnecte, setConjointConnecte] = useState(false);
   const [codeDuoInput, setCodeDuoInput] = useState('');
   const [joinLoading, setJoinLoading] = useState(false);
+  const [showReset, setShowReset] = useState(false);
+  const [versionTapCount, setVersionTapCount] = useState(0);
+  const [deleteLoading, setDeleteLoading] = useState(false);
   const [notifPlan, setNotifPlan] = useState(true);
   const [notifQuestions, setNotifQuestions] = useState(true);
   const [notifDuo, setNotifDuo] = useState(true);
@@ -294,6 +297,46 @@ export default function ProfileScreen() {
         await scheduleNotificationsPlan(niveau, parseInt(jourStr || '0'), g || 'homme', []);
       }
     }
+  };
+
+  const handleVersionTap = () => {
+    const next = versionTapCount + 1;
+    setVersionTapCount(next);
+    if (next >= 3) {
+      setShowReset(true);
+      setVersionTapCount(0);
+    }
+  };
+
+  const supprimerCompte = () => {
+    Alert.alert(
+      t('profil.supprimer_titre'),
+      t('profil.supprimer_confirm'),
+      [
+        { text: t('generic.annuler'), style: 'cancel' },
+        {
+          text: t('profil.supprimer_btn'),
+          style: 'destructive',
+          onPress: async () => {
+            setDeleteLoading(true);
+            try {
+              const { data: { user } } = await supabase.auth.getUser();
+              if (user?.id) {
+                await supabase.from('users').delete().eq('id', user.id);
+              }
+              if (user?.email) {
+                await supabase.from('duos')
+                  .update({ statut: 'archive' })
+                  .or(`initiateur.eq.${user.email},conjoint.eq.${user.email}`);
+              }
+              await supabase.auth.signOut();
+            } catch (_) {}
+            await AsyncStorage.clear();
+            appReset.onReset?.();
+          },
+        },
+      ]
+    );
   };
 
   const resetApp = () => {
@@ -562,17 +605,24 @@ export default function ProfileScreen() {
           </View>
         </View>
 
-        {/* Version */}
+        {/* Version — triple tap pour débloquer le reset */}
         <View style={styles.section}>
-          <View style={styles.card}>
+          <TouchableOpacity style={styles.card} onPress={handleVersionTap} activeOpacity={1}>
             <Text style={[styles.rowTitle, { textAlign: 'center' }]}>{t('profil.version')}</Text>
             <Text style={[styles.rowSub, { textAlign: 'center', marginTop: 4 }]}>{t('profil.version_sub')}</Text>
-          </View>
+          </TouchableOpacity>
         </View>
 
-        {/* Reset */}
-        <TouchableOpacity style={styles.resetBtn} onPress={resetApp}>
-          <Text style={styles.resetText}>🗑️ {t('profil.reinitialiser')}</Text>
+        {/* Reset — visible seulement après triple tap sur la version */}
+        {showReset && (
+          <TouchableOpacity style={styles.resetBtn} onPress={resetApp}>
+            <Text style={styles.resetText}>🗑️ {t('profil.reinitialiser')}</Text>
+          </TouchableOpacity>
+        )}
+
+        {/* Supprimer mon compte */}
+        <TouchableOpacity style={styles.deleteBtn} onPress={supprimerCompte} disabled={deleteLoading}>
+          <Text style={styles.deleteTxt}>{deleteLoading ? '...' : t('profil.supprimer_compte')}</Text>
         </TouchableOpacity>
 
         <View style={{ height: Platform.OS === 'ios' ? 20 : 10 }} />
@@ -609,8 +659,10 @@ const styles = StyleSheet.create({
   aboutLine: { height: 1, backgroundColor: COLORS.border, marginBottom: 16 },
   aboutVerset: { fontSize: SIZES.sm, color: COLORS.textSecondary, fontStyle: 'italic', lineHeight: 20, marginBottom: 6 },
   aboutRef: { fontSize: SIZES.xs, color: COLORS.accent, fontWeight: '700' },
-  resetBtn: { marginHorizontal: 20, padding: 16, borderRadius: RADIUS.lg, borderWidth: 1, borderColor: '#ffcccc', backgroundColor: '#fff5f5', alignItems: 'center' },
+  resetBtn: { marginHorizontal: 20, padding: 16, borderRadius: RADIUS.lg, borderWidth: 1, borderColor: '#ffcccc', backgroundColor: '#fff5f5', alignItems: 'center', marginBottom: 12 },
   resetText: { fontSize: SIZES.sm, color: '#cc0000', fontWeight: '600' },
+  deleteBtn: { marginHorizontal: 20, marginBottom: 8, padding: 14, alignItems: 'center' },
+  deleteTxt: { fontSize: SIZES.sm, color: '#cc0000', fontWeight: '400', textDecorationLine: 'underline' },
   codeCard: {
     backgroundColor: COLORS.primaryLight,
     borderRadius: 12,

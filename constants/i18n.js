@@ -281,6 +281,10 @@ export const translations = {
     'profil.rejoindre_duo': 'Rejoindre un duo',
     'profil.rejoindre_duo_desc': 'Entre le code de ton conjoint(e) pour vous connecter',
     'profil.rejoindre_btn': 'Rejoindre',
+    'profil.supprimer_compte': 'Supprimer mon compte',
+    'profil.supprimer_titre': 'Supprimer le compte',
+    'profil.supprimer_confirm': 'Êtes-vous sûr ? Cette action est irréversible. Toutes vos données seront supprimées définitivement.',
+    'profil.supprimer_btn': 'Supprimer',
 
     // Défis
     'defis.titre': 'Défis du couple',
@@ -697,6 +701,10 @@ export const translations = {
     'profil.rejoindre_duo': 'Join a duo',
     'profil.rejoindre_duo_desc': "Enter your spouse's code to connect",
     'profil.rejoindre_btn': 'Join',
+    'profil.supprimer_compte': 'Delete my account',
+    'profil.supprimer_titre': 'Delete account',
+    'profil.supprimer_confirm': 'Are you sure? This action is irreversible. All your data will be permanently deleted.',
+    'profil.supprimer_btn': 'Delete',
 
     // Défis
     'defis.titre': 'Couple Challenges',
