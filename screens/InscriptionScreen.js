@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity, StyleSheet,
-  SafeAreaView, ScrollView, Alert, ActivityIndicator, Image,
+  SafeAreaView, ScrollView, Alert, ActivityIndicator, Image, Linking,
 } from 'react-native';
 import { supabase } from '../config/supabase';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -24,6 +24,20 @@ export default function InscriptionScreen({ navigation, route, onDone }) {
   const [consentCgu, setConsentCgu] = useState(false);
   const [loading, setLoading] = useState(false);
   const [showMdp, setShowMdp] = useState(false);
+
+  const ouvrirCGU = async () => {
+    const lang = await AsyncStorage.getItem('app_language');
+    Linking.openURL(lang === 'en'
+      ? 'https://noorcouple-legal.vercel.app/cgu-en.html'
+      : 'https://noorcouple-legal.vercel.app/cgu-fr.html');
+  };
+
+  const ouvrirConfidentialite = async () => {
+    const lang = await AsyncStorage.getItem('app_language');
+    Linking.openURL(lang === 'en'
+      ? 'https://noorcouple-legal.vercel.app/politique-confidentialite-en.html'
+      : 'https://noorcouple-legal.vercel.app/politique-confidentialite-fr.html');
+  };
 
   const valider = async () => {
     // 1. Champs vides
@@ -126,7 +140,7 @@ export default function InscriptionScreen({ navigation, route, onDone }) {
 
       if (!authData?.user) {
         console.log('Pas d\'utilisateur retourné');
-        Alert.alert('Erreur', 'Compte non créé');
+        Alert.alert(t('generic.erreur'), t('auth.erreur_compte'));
         setLoading(false);
         return;
       }
@@ -152,7 +166,7 @@ export default function InscriptionScreen({ navigation, route, onDone }) {
 
       if (dbError) {
         console.log('ERREUR INSERT users:', dbError.message);
-        Alert.alert('Avertissement', 'Compte créé mais profil incomplet: ' + dbError.message);
+        Alert.alert(t('generic.erreur'), 'Compte créé mais profil incomplet: ' + dbError.message);
       }
 
       // 3. Sync code duo en attente vers Supabase
@@ -175,9 +189,9 @@ export default function InscriptionScreen({ navigation, route, onDone }) {
 
       if (signInError) {
         Alert.alert(
-          'Compte créé ✅',
-          'Votre compte a été créé. Connectez-vous maintenant.',
-          [{ text: 'OK', onPress: () => navigation.navigate('Connexion', { redirect, isMainStack }) }]
+          t('auth.compte_cree_titre'),
+          t('auth.compte_cree_msg'),
+          [{ text: t('generic.ok'), onPress: () => navigation.navigate('Connexion', { redirect, isMainStack }) }]
         );
         return;
       }
@@ -205,7 +219,7 @@ export default function InscriptionScreen({ navigation, route, onDone }) {
         appGoMain?.onGoMain?.();
       }
     } catch (e) {
-      Alert.alert('Erreur', 'Impossible de créer le compte.');
+      Alert.alert(t('generic.erreur'), t('auth.erreur_impossible'));
     } finally {
       setLoading(false);
     }
@@ -227,20 +241,20 @@ export default function InscriptionScreen({ navigation, route, onDone }) {
               marginBottom: 16,
             }}
           />
-          <Text style={styles.titre}>Créer un compte</Text>
+          <Text style={styles.titre}>{t('auth.titre_inscription')}</Text>
         </View>
 
         <View style={styles.form}>
           {/* Prénom */}
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Prénom</Text>
+            <Text style={styles.label}>{t('auth.label_prenom')}</Text>
             <TextInput style={styles.input} value={prenom} onChangeText={setPrenom}
-              placeholder="Ton prénom" placeholderTextColor={COLORS.textLight} />
+              placeholder={t('auth.placeholder_prenom')} placeholderTextColor={COLORS.textLight} />
           </View>
 
           {/* Email */}
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Email</Text>
+            <Text style={styles.label}>{t('auth.label_email')}</Text>
             <TextInput style={styles.input} value={email} onChangeText={setEmail}
               placeholder="ton@email.com" placeholderTextColor={COLORS.textLight}
               keyboardType="email-address" autoCapitalize="none" />
@@ -248,30 +262,30 @@ export default function InscriptionScreen({ navigation, route, onDone }) {
 
           {/* Genre */}
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Ton profil</Text>
+            <Text style={styles.label}>{t('auth.label_profil')}</Text>
             <View style={styles.genreRow}>
               <TouchableOpacity
                 style={[styles.genreBtn, genre === 'homme' && styles.genreActif]}
                 onPress={() => setGenre('homme')}
               >
-                <Text style={[styles.genreTxt, genre === 'homme' && styles.genreTxtActif]}>👨 Homme</Text>
+                <Text style={[styles.genreTxt, genre === 'homme' && styles.genreTxtActif]}>{t('auth.genre_homme')}</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={[styles.genreBtn, genre === 'femme' && { ...styles.genreActif, borderColor: COLORS.femme, backgroundColor: COLORS.femme }]}
                 onPress={() => setGenre('femme')}
               >
-                <Text style={[styles.genreTxt, genre === 'femme' && styles.genreTxtActif]}>👩 Femme</Text>
+                <Text style={[styles.genreTxt, genre === 'femme' && styles.genreTxtActif]}>{t('auth.genre_femme')}</Text>
               </TouchableOpacity>
             </View>
           </View>
 
           {/* Mot de passe */}
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Mot de passe</Text>
+            <Text style={styles.label}>{t('auth.label_mdp')}</Text>
             <View style={styles.mdpRow}>
               <TextInput style={[styles.input, { flex: 1, marginBottom: 0 }]}
                 value={mdp} onChangeText={setMdp}
-                placeholder="Au moins 6 caractères" placeholderTextColor={COLORS.textLight}
+                placeholder={t('auth.placeholder_mdp')} placeholderTextColor={COLORS.textLight}
                 secureTextEntry={!showMdp} />
               <TouchableOpacity onPress={() => setShowMdp(!showMdp)} style={{ padding: 10 }}>
                 <Text>{showMdp ? '🙈' : '👁️'}</Text>
@@ -280,39 +294,46 @@ export default function InscriptionScreen({ navigation, route, onDone }) {
           </View>
 
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Confirmer le mot de passe</Text>
+            <Text style={styles.label}>{t('auth.label_mdp_confirm')}</Text>
             <TextInput style={styles.input} value={mdpConfirm} onChangeText={setMdpConfirm}
               placeholder="••••••••" placeholderTextColor={COLORS.textLight}
               secureTextEntry={!showMdp} />
           </View>
 
           {/* Consentements RGPD */}
-          <TouchableOpacity style={styles.checkRow} onPress={() => setConsentRgpd(!consentRgpd)}>
-            <View style={[styles.checkbox, consentRgpd && styles.checkboxActif]}>
-              {consentRgpd && <Text style={styles.checkmark}>✓</Text>}
-            </View>
+          <View style={styles.checkRow}>
+            <TouchableOpacity onPress={() => setConsentRgpd(!consentRgpd)}>
+              <View style={[styles.checkbox, consentRgpd && styles.checkboxActif]}>
+                {consentRgpd && <Text style={styles.checkmark}>✓</Text>}
+              </View>
+            </TouchableOpacity>
             <Text style={styles.checkLabel}>
-              J'accepte la{' '}
-              <Text style={{ color: COLORS.primary, fontWeight: '700' }}>
-                politique de confidentialité
+              {t('auth.consent_rgpd')}{' '}
+              <Text style={styles.lienLegal} onPress={ouvrirConfidentialite}>
+                {t('auth.consent_rgpd_lien')}
               </Text>
             </Text>
-          </TouchableOpacity>
+          </View>
 
-          <TouchableOpacity style={styles.checkRow} onPress={() => setConsentCgu(!consentCgu)}>
-            <View style={[styles.checkbox, consentCgu && styles.checkboxActif]}>
-              {consentCgu && <Text style={styles.checkmark}>✓</Text>}
-            </View>
-            <Text style={styles.checkLabel}>J'accepte les <Text style={{ color: COLORS.primary, fontWeight: '700' }}>CGU</Text></Text>
-          </TouchableOpacity>
+          <View style={styles.checkRow}>
+            <TouchableOpacity onPress={() => setConsentCgu(!consentCgu)}>
+              <View style={[styles.checkbox, consentCgu && styles.checkboxActif]}>
+                {consentCgu && <Text style={styles.checkmark}>✓</Text>}
+              </View>
+            </TouchableOpacity>
+            <Text style={styles.checkLabel}>
+              {t('auth.consent_cgu')}{' '}
+              <Text style={styles.lienLegal} onPress={ouvrirCGU}>{t('auth.consent_cgu_lien')}</Text>
+            </Text>
+          </View>
 
           <TouchableOpacity style={[styles.btn, loading && { opacity: 0.6 }]} onPress={valider} disabled={loading}>
-            {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.btnText}>Créer mon compte →</Text>}
+            {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.btnText}>{t('auth.btn_creer')}</Text>}
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.connexionBtn} onPress={() => navigation.navigate('Connexion')}>
             <Text style={styles.connexionText}>
-              Déjà un compte ? <Text style={{ color: COLORS.primary, fontWeight: '700' }}>Se connecter</Text>
+              {t('auth.deja_compte')} <Text style={{ color: COLORS.primary, fontWeight: '700' }}>{t('auth.se_connecter')}</Text>
             </Text>
           </TouchableOpacity>
         </View>
@@ -342,6 +363,7 @@ const styles = StyleSheet.create({
   checkboxActif: { backgroundColor: COLORS.primary, borderColor: COLORS.primary },
   checkmark: { color: '#fff', fontSize: 13, fontWeight: '700' },
   checkLabel: { flex: 1, fontSize: 13, color: COLORS.textSecondary, lineHeight: 19 },
+  lienLegal: { color: COLORS.primary, fontWeight: '700', textDecorationLine: 'underline' },
   btn: { backgroundColor: COLORS.primary, borderRadius: RADIUS.full, padding: 16, alignItems: 'center', marginTop: 8 },
   btnText: { color: '#fff', fontSize: 16, fontWeight: '700' },
   connexionBtn: { alignItems: 'center', marginTop: 20 },

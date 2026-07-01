@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import {
   View, Text, TouchableOpacity, StyleSheet,
-  SafeAreaView, ScrollView, Image,
+  SafeAreaView, ScrollView, Image, Linking,
 } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { COLORS, SIZES, RADIUS, SHADOW } from '../constants/theme';
 import { useLanguage } from '../context/LanguageContext';
 
@@ -46,6 +47,20 @@ export default function PaywallScreen({ navigation, route }) {
   const [abonnementChoisi, setAbonnementChoisi] = useState('annuel');
 
   const demarrerEssai = () => onContinuer ? onContinuer() : goInscription();
+
+  const ouvrirCGU = async () => {
+    const lang = await AsyncStorage.getItem('app_language');
+    Linking.openURL(lang === 'en'
+      ? 'https://noorcouple-legal.vercel.app/cgu-en.html'
+      : 'https://noorcouple-legal.vercel.app/cgu-fr.html');
+  };
+
+  const ouvrirConfidentialite = async () => {
+    const lang = await AsyncStorage.getItem('app_language');
+    Linking.openURL(lang === 'en'
+      ? 'https://noorcouple-legal.vercel.app/politique-confidentialite-en.html'
+      : 'https://noorcouple-legal.vercel.app/politique-confidentialite-fr.html');
+  };
 
   return (
     <SafeAreaView style={styles.safe}>
@@ -132,6 +147,12 @@ export default function PaywallScreen({ navigation, route }) {
 
         {/* Mention légale */}
         <Text style={styles.mentionLegale}>{t('paywall.renouvellement_auto')}</Text>
+
+        <Text style={styles.mentionLegale}>
+          <Text style={styles.lienLegal} onPress={ouvrirCGU}>{t('paywall.cgu') || 'CGU'}</Text>
+          {' · '}
+          <Text style={styles.lienLegal} onPress={ouvrirConfidentialite}>{t('paywall.confidentialite') || 'Politique de confidentialité'}</Text>
+        </Text>
 
         <View style={{ height: 32 }} />
       </ScrollView>
@@ -288,6 +309,7 @@ const styles = StyleSheet.create({
     lineHeight: 14,
     marginTop: 8,
   },
+  lienLegal: { color: COLORS.primary, textDecorationLine: 'underline' },
   badgeEssai: {
     position: 'absolute',
     top: 8,

@@ -354,6 +354,8 @@ export const translations = {
     'paywall.essai_jours': 'jour(s)',
     'paywall.duo_partage': '💑 Un seul paiement suffit pour votre couple. Si votre conjoint(e) a déjà payé, vous bénéficiez automatiquement de l\'accès complet.',
     'paywall.en_savoir_plus': 'En savoir plus',
+    'paywall.cgu': 'CGU',
+    'paywall.confidentialite': 'Politique de confidentialité',
 
     // Auth
     'auth.champs_requis': 'Tous les champs sont requis.',
@@ -375,6 +377,29 @@ export const translations = {
     'auth.mdp_invalide': 'Le mot de passe ne respecte pas les critères de sécurité.',
     'auth.email_format': "L'adresse email semble invalide. Vérifie-la et réessaye.",
     'auth.erreur_reseau': 'Pas de connexion internet. Vérifie ta connexion et réessaye.',
+
+    // Auth — Inscription UI
+    'auth.titre_inscription': 'Créer un compte',
+    'auth.label_prenom': 'Prénom',
+    'auth.placeholder_prenom': 'Ton prénom',
+    'auth.label_email': 'Email',
+    'auth.label_profil': 'Ton profil',
+    'auth.genre_homme': '👨 Homme',
+    'auth.genre_femme': '👩 Femme',
+    'auth.label_mdp': 'Mot de passe',
+    'auth.placeholder_mdp': 'Au moins 6 caractères',
+    'auth.label_mdp_confirm': 'Confirmer le mot de passe',
+    'auth.consent_rgpd': "J'accepte la",
+    'auth.consent_rgpd_lien': 'politique de confidentialité',
+    'auth.consent_cgu': "J'accepte les",
+    'auth.consent_cgu_lien': 'CGU',
+    'auth.btn_creer': 'Créer mon compte →',
+    'auth.deja_compte': 'Déjà un compte ?',
+    'auth.se_connecter': 'Se connecter',
+    'auth.erreur_compte': 'Compte non créé',
+    'auth.compte_cree_titre': 'Compte créé ✅',
+    'auth.compte_cree_msg': 'Votre compte a été créé. Connectez-vous maintenant.',
+    'auth.erreur_impossible': 'Impossible de créer le compte.',
 
     // Générique
     'generic.continuer': 'Continuer',
@@ -745,6 +770,8 @@ export const translations = {
     'paywall.essai_jours': 'day(s)',
     'paywall.duo_partage': '💑 One payment is enough for your couple. If your spouse has already paid, you automatically get full access.',
     'paywall.en_savoir_plus': 'Learn more',
+    'paywall.cgu': 'Terms of Service',
+    'paywall.confidentialite': 'Privacy Policy',
 
     // Auth
     'auth.champs_requis': 'All fields are required.',
@@ -766,6 +793,29 @@ export const translations = {
     'auth.mdp_invalide': 'The password does not meet security criteria.',
     'auth.email_format': 'The email address seems invalid. Check it and try again.',
     'auth.erreur_reseau': 'No internet connection. Check your connection and try again.',
+
+    // Auth — Inscription UI
+    'auth.titre_inscription': 'Create an account',
+    'auth.label_prenom': 'First name',
+    'auth.placeholder_prenom': 'Your first name',
+    'auth.label_email': 'Email',
+    'auth.label_profil': 'Your profile',
+    'auth.genre_homme': '👨 Man',
+    'auth.genre_femme': '👩 Woman',
+    'auth.label_mdp': 'Password',
+    'auth.placeholder_mdp': 'At least 6 characters',
+    'auth.label_mdp_confirm': 'Confirm password',
+    'auth.consent_rgpd': 'I accept the',
+    'auth.consent_rgpd_lien': 'privacy policy',
+    'auth.consent_cgu': 'I accept the',
+    'auth.consent_cgu_lien': 'Terms of Service',
+    'auth.btn_creer': 'Create my account →',
+    'auth.deja_compte': 'Already have an account?',
+    'auth.se_connecter': 'Log in',
+    'auth.erreur_compte': 'Account not created',
+    'auth.compte_cree_titre': 'Account created ✅',
+    'auth.compte_cree_msg': 'Your account has been created. Please log in now.',
+    'auth.erreur_impossible': 'Unable to create account.',
 
     // Generic
     'generic.continuer': 'Continue',
