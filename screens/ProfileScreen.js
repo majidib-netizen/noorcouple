@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, StyleSheet, SafeAreaView, TouchableOpacity, TextInput, Switch, Alert, Platform, Share } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, SafeAreaView, TouchableOpacity, TextInput, Switch, Alert, Platform, Share, Linking } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { COLORS, SIZES, RADIUS, SHADOW } from '../constants/theme';
@@ -592,6 +592,19 @@ export default function ProfileScreen() {
           <TouchableOpacity style={styles.card} onPress={handleVersionTap} activeOpacity={1}>
             <Text style={[styles.rowTitle, { textAlign: 'center' }]}>{t('profil.version')}</Text>
             <Text style={[styles.rowSub, { textAlign: 'center', marginTop: 4 }]}>{t('profil.version_sub')}</Text>
+            <View style={styles.legalLinks}>
+              <TouchableOpacity onPress={() => Linking.openURL(langue === 'en'
+                ? 'https://noorcouple-legal.vercel.app/cgu-en.html'
+                : 'https://noorcouple-legal.vercel.app/cgu-fr.html')}>
+                <Text style={styles.legalLink}>{t('paywall.cgu')}</Text>
+              </TouchableOpacity>
+              <Text style={styles.legalSep}>·</Text>
+              <TouchableOpacity onPress={() => Linking.openURL(langue === 'en'
+                ? 'https://noorcouple-legal.vercel.app/politique-confidentialite-en.html'
+                : 'https://noorcouple-legal.vercel.app/politique-confidentialite-fr.html')}>
+                <Text style={styles.legalLink}>{t('paywall.confidentialite')}</Text>
+              </TouchableOpacity>
+            </View>
           </TouchableOpacity>
         </View>
 
@@ -645,6 +658,9 @@ const styles = StyleSheet.create({
   resetText: { fontSize: SIZES.sm, color: '#cc0000', fontWeight: '600' },
   deleteBtn: { marginHorizontal: 20, marginBottom: 8, padding: 14, alignItems: 'center' },
   deleteTxt: { fontSize: SIZES.sm, color: '#cc0000', fontWeight: '400', textDecorationLine: 'underline' },
+  legalLinks: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 8, marginTop: 12 },
+  legalLink: { fontSize: SIZES.xs, color: COLORS.primary, textDecorationLine: 'underline' },
+  legalSep: { fontSize: SIZES.xs, color: COLORS.textLight },
   codeCard: {
     backgroundColor: COLORS.primaryLight,
     borderRadius: 12,
