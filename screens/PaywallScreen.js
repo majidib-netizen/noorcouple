@@ -41,7 +41,7 @@ export default function PaywallScreen({ navigation, route }) {
 
   const fermer = () => {
     if (onFermer) { onFermer(); return; }
-    navigation.navigate('Accueil');
+    navigation.navigate('Main', { screen: 'Accueil' });
   };
 
   const [abonnementChoisi, setAbonnementChoisi] = useState('annuel');
