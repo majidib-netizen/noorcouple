@@ -16,7 +16,7 @@ const TimePickerCard = ({ label, heure, minutes, ampm, onHeureChange, onMinutesC
   const handleHeurePress = () => {
     if (langue === 'en') {
       const newH = heure >= 12 ? 1 : heure + 1;
-      if (heure === 12 && newH === 1) {
+      if ((heure === 12 && newH === 1) || (heure === 11 && newH === 12)) {
         onAmPmChange(ampm === 'AM' ? 'PM' : 'AM');
       }
       onHeureChange(newH);
@@ -141,7 +141,6 @@ export default function ProfileScreen() {
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [notifPlan, setNotifPlan] = useState(true);
   const [notifQuestions, setNotifQuestions] = useState(true);
-  const [notifDuo, setNotifDuo] = useState(true);
   const [heureMatin, setHeureMatin] = useState(7);
   const [minutesMatin, setMinutesMatin] = useState(30);
   const [ampmMatin, setAmpmMatin] = useState('AM');
@@ -173,7 +172,6 @@ export default function ProfileScreen() {
     const dcj = await AsyncStorage.getItem('duo_code_conjoint');
     const np  = await AsyncStorage.getItem('notif_plan');
     const nq  = await AsyncStorage.getItem('notif_questions');
-    const nd  = await AsyncStorage.getItem('notif_duo');
     const hm  = await AsyncStorage.getItem('notif_heure_matin');
     const hs  = await AsyncStorage.getItem('notif_heure_soir');
     setGenre(g);
@@ -192,7 +190,6 @@ export default function ProfileScreen() {
     if (dcj) setDuoConjoint(dcj);
     setNotifPlan(np !== 'false');
     setNotifQuestions(nq !== 'false');
-    setNotifDuo(nd !== 'false');
     if (hm) {
       const [h, m] = hm.split(':').map(Number);
       if (langue === 'en') {
@@ -256,7 +253,9 @@ export default function ProfileScreen() {
         const niveau = await AsyncStorage.getItem('plan_niveau');
         const jourStr = await AsyncStorage.getItem('plan_jour');
         const g = await AsyncStorage.getItem('genre');
-        if (niveau) await scheduleNotificationsPlan(niveau, parseInt(jourStr || '0'), g || 'homme', []);
+        const faillesStr = await AsyncStorage.getItem('plan_failles');
+        const failles = faillesStr ? JSON.parse(faillesStr) : [];
+        if (niveau) await scheduleNotificationsPlan(niveau, parseInt(jourStr || '0'), g || 'homme', failles);
       } else {
         await annulerNotificationsPlan();
       }
@@ -270,11 +269,6 @@ export default function ProfileScreen() {
       if (value) await scheduleNotification();
       else await annulerNotificationsQuestions();
     }
-  };
-
-  const toggleNotifDuo = async (value) => {
-    setNotifDuo(value);
-    await AsyncStorage.setItem('notif_duo', String(value));
   };
 
   const sauvegarderHeures = async (hm, mm, ampm_m, hs, ms, ampm_s) => {
@@ -550,18 +544,6 @@ export default function ProfileScreen() {
                 onValueChange={toggleNotifQuestions}
                 trackColor={{ false: COLORS.border, true: COLORS.primary }}
                 thumbColor={notifQuestions ? '#fff' : '#f4f3f4'}
-              />
-            </View>
-            <View style={[styles.row, { borderTopWidth: 1, borderTopColor: COLORS.border, paddingTop: 14, marginTop: 14, marginBottom: 0 }]}>
-              <View style={{ flex: 1, marginRight: 12 }}>
-                <Text style={styles.rowTitle}>{t('profil.notif_duo')}</Text>
-                <Text style={styles.rowSub}>{t('profil.notif_duo_desc')}</Text>
-              </View>
-              <Switch
-                value={notifDuo}
-                onValueChange={toggleNotifDuo}
-                trackColor={{ false: COLORS.border, true: COLORS.primary }}
-                thumbColor={notifDuo ? '#fff' : '#f4f3f4'}
               />
             </View>
           </View>
