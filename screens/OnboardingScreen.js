@@ -194,6 +194,16 @@ export default function OnboardingScreen({ navigation, onDone }) {
           >
             <Text style={s.bienvenueExplorerTxt}>{t('onboarding.decouvrir')}</Text>
           </TouchableOpacity>
+          <TouchableOpacity
+            style={s.bienvenueConnexionLien}
+            onPress={() => navigation.navigate('Connexion')}
+            activeOpacity={0.7}
+          >
+            <Text style={s.bienvenueConnexionTxt}>
+              {t('auth.deja_compte')}{' '}
+              <Text style={{ color: COLORS.primary, fontWeight: '700' }}>{t('auth.se_connecter')}</Text>
+            </Text>
+          </TouchableOpacity>
         </View>
       </SafeAreaView>
     );
@@ -614,6 +624,8 @@ const s = StyleSheet.create({
   bienvenueBtnTxt: { fontSize: 16, fontWeight: '700', color: '#fff' },
   bienvenueExplorerBtn: { alignItems: 'center', marginTop: 16, paddingVertical: 8 },
   bienvenueExplorerTxt: { fontSize: 13, color: COLORS.textSecondary, textDecorationLine: 'underline' },
+  bienvenueConnexionLien: { alignItems: 'center', marginTop: 20, paddingVertical: 4 },
+  bienvenueConnexionTxt: { fontSize: 13, color: COLORS.textSecondary },
 
   // Invite code
   inviteCenter: { flex: 1, paddingHorizontal: 24, paddingTop: 16 },
