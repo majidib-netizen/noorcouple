@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, ScrollView, StyleSheet, SafeAreaView, TouchableOpacity, TextInput, Switch, Alert, Platform, Share, Linking } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { COLORS, SIZES, RADIUS, SHADOW } from '../constants/theme';
 import { appReset } from '../utils/appState';
@@ -127,6 +128,7 @@ const tpStyles = StyleSheet.create({
 // ─── ProfileScreen ─────────────────────────────────────────────────────────────
 export default function ProfileScreen() {
   const { t, langue, changeLanguage } = useLanguage();
+  const navigation = useNavigation();
   const insets = useSafeAreaInsets();
   const [genre, setGenre] = useState('homme');
   const [prenom, setPrenom] = useState('');
