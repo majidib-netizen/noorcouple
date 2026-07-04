@@ -480,7 +480,7 @@ export default function ProfileScreen() {
                         t('duo.compte_requis_msg'),
                         [
                           { text: t('generic.annuler'), style: 'cancel' },
-                          { text: t('duo.creer_compte_btn'), onPress: () => navigation.navigate('Inscription') },
+                          { text: t('duo.creer_compte_btn'), onPress: () => navigation.navigate('Inscription', { isMainStack: true }) },
                         ]
                       );
                       return;
