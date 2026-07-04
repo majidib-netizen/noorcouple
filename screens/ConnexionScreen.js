@@ -95,24 +95,17 @@ export default function ConnexionScreen({ navigation, route, onDone }) {
           }
         } catch (_) {}
       }
-      // Navigation robuste — couvre tous les cas
-      if (typeof onDone === 'function') {
-        onDone();
-      } else if (isMainStack) {
+      if (isMainStack) {
         navigation.reset({ index: 0, routes: [{ name: 'Main' }] });
-      } else if (appGoMain?.onGoMain) {
-        appGoMain.onGoMain();
+      } else if (typeof onDone === 'function') {
+        onDone();
+        // onDone may call setAppState('main') which registers 'Main' in the stack
+        // asynchronously. Wait one event-loop tick then reset navigation.
+        setTimeout(() => {
+          try { navigation.reset({ index: 0, routes: [{ name: 'Main' }] }); } catch (_) {}
+        }, 0);
       } else {
-        // Fallback ultime — force le retour à l'accueil
-        try {
-          navigation.reset({ index: 0, routes: [{ name: 'Main' }] });
-        } catch (e) {
-          try {
-            navigation.navigate('Main');
-          } catch (e2) {
-            if (appGoMain) appGoMain.onGoMain?.();
-          }
-        }
+        appGoMain?.onGoMain?.();
       }
     } catch (e) {
       console.log('Exception connexion:', e);
