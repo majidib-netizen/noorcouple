@@ -190,6 +190,9 @@ export const translations = {
     'duo.actif_desc': 'Vous êtes maintenant connectés. Votre conjoint(e) peut suivre le parcours avec vous.',
     'duo.erreur_titre': 'Problème avec le code Duo',
     'duo.code_relancer': 'Tu peux réessayer dans ton profil → Rejoindre un duo.',
+    'duo.compte_requis_titre': 'Compte requis',
+    'duo.compte_requis_msg': 'Tu dois créer un compte pour rejoindre ce duo. Ton code sera appliqué automatiquement après ton inscription.',
+    'duo.creer_compte_btn': 'Créer mon compte',
 
     // Questions
     'questions.titre': 'Discutons',
@@ -610,6 +613,9 @@ export const translations = {
     'duo.actif_desc': 'You are now connected. Your spouse can follow the journey with you.',
     'duo.erreur_titre': 'Duo code issue',
     'duo.code_relancer': 'You can try again in your profile → Join a duo.',
+    'duo.compte_requis_titre': 'Account required',
+    'duo.compte_requis_msg': 'You need an account to join this duo. Your code will be applied automatically after signing up.',
+    'duo.creer_compte_btn': 'Create my account',
 
     // Questions
     'questions.titre': 'Discuss',

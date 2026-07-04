@@ -203,6 +203,12 @@ export default function InscriptionScreen({ navigation, route, onDone }) {
         const resultDuo = await rejoindreAvecCode(codePending);
         if (resultDuo.succes) {
           await AsyncStorage.removeItem('duo_code_conjoint_pending');
+          try {
+            const { data: duoData } = await supabase.from('duos').select('paiement_valide').eq('code', codePending).single();
+            if (duoData?.paiement_valide) {
+              await AsyncStorage.setItem('duo_partenaire_paye', 'true');
+            }
+          } catch (_) {}
         } else {
           Alert.alert(
             t('duo.erreur_titre') || 'Problème avec le code Duo',

@@ -129,6 +129,18 @@ export default function App() {
             console.log('Profil non trouvé:', e);
           }
 
+          try {
+            const duoCode = await AsyncStorage.getItem('duo_code') || await AsyncStorage.getItem('duo_code_conjoint');
+            if (duoCode) {
+              const { data: duoData } = await supabase.from('duos').select('paiement_valide').eq('code', duoCode).single();
+              if (duoData?.paiement_valide) {
+                await AsyncStorage.setItem('duo_partenaire_paye', 'true');
+              } else {
+                await AsyncStorage.removeItem('duo_partenaire_paye');
+              }
+            }
+          } catch (_) {}
+
           setAppState('main');
           return;
         }

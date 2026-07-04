@@ -469,6 +469,20 @@ export default function ProfileScreen() {
                   disabled={codeDuoInput.replace(/-/g, '').length < 10 || joinLoading}
                   onPress={async () => {
                     setJoinLoading(true);
+                    const { data: { user } } = await supabase.auth.getUser();
+                    if (!user?.email) {
+                      await AsyncStorage.setItem('duo_code_conjoint_pending', codeDuoInput.trim().toUpperCase());
+                      setJoinLoading(false);
+                      Alert.alert(
+                        t('duo.compte_requis_titre'),
+                        t('duo.compte_requis_msg'),
+                        [
+                          { text: t('generic.annuler'), style: 'cancel' },
+                          { text: t('duo.creer_compte_btn'), onPress: () => navigation.navigate('Inscription') },
+                        ]
+                      );
+                      return;
+                    }
                     const resultat = await rejoindreAvecCode(codeDuoInput);
                     if (!resultat.succes) {
                       Alert.alert(t('duo.code_invalide'), resultat.message || t('duo.code_invalide_desc'));

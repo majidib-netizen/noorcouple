@@ -456,7 +456,8 @@ export default function OnboardingScreen({ navigation, onDone }) {
           await sauvegarderDiagnosticDuo(niv, f, nouvellesReponses).catch(e =>
             console.log('Diag duo save error:', e)
           );
-          goTo(ETAPE.PAIEMENT);
+          const codePending = await AsyncStorage.getItem('duo_code_conjoint_pending');
+          goTo(codePending ? ETAPE.INSCRIPTION : ETAPE.PAIEMENT);
         } catch (e) { console.log('Erreur diagnostic save:', e); }
       }
     };

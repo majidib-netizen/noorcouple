@@ -453,6 +453,7 @@ export const regenererCodeDuo = async () => {
       'jours_reveles',
       'niveau_commun_cache',
       'failles_communes_cache',
+      'duo_partenaire_paye',
     ]);
 
     const nouveauCode = await obtenirOuCreerCode();
@@ -480,6 +481,7 @@ export const quitterDuo = async () => {
       'jours_reveles',
       'niveau_commun_cache',
       'failles_communes_cache',
+      'duo_partenaire_paye',
     ]);
 
     return { succes: true };
