@@ -220,9 +220,7 @@ export default function App() {
                   {(props) => (
                     <ConnexionScreen
                       {...props}
-                      onDone={() => {
-                        appGoMain.onGoMain?.();
-                      }}
+                      onDone={handleOnDone}
                     />
                   )}
                 </Stack.Screen>

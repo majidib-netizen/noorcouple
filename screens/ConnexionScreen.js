@@ -60,6 +60,40 @@ export default function ConnexionScreen({ navigation, route, onDone }) {
         if (codeDuoPending) {
           await sauvegarderCodeDuoSupabase(codeDuoPending);
         }
+
+        // Restaurer duo + diagnostic depuis Supabase (nouveau téléphone)
+        try {
+          const userEmail = data.user.email || email.trim().toLowerCase();
+          const { data: duoData } = await supabase
+            .from('duos')
+            .select('code, initiateur, paiement_valide, diagnostic_initiateur, diagnostic_conjoint')
+            .or(`initiateur.eq.${userEmail},conjoint.eq.${userEmail}`)
+            .eq('statut', 'actif')
+            .single();
+
+          if (duoData) {
+            const estInitiateur = duoData.initiateur === userEmail;
+            if (estInitiateur) {
+              await AsyncStorage.setItem('duo_code', duoData.code);
+            } else {
+              await AsyncStorage.setItem('duo_code_conjoint', duoData.code);
+            }
+            const diag = estInitiateur
+              ? duoData.diagnostic_initiateur
+              : duoData.diagnostic_conjoint;
+            if (diag?.niveau) {
+              await AsyncStorage.setItem('plan_niveau', diag.niveau);
+            }
+            if (diag?.reponses) {
+              await AsyncStorage.setItem('plan_reponses', JSON.stringify(diag.reponses));
+            }
+            if (duoData.paiement_valide) {
+              await AsyncStorage.setItem('duo_partenaire_paye', 'true');
+            } else {
+              await AsyncStorage.removeItem('duo_partenaire_paye');
+            }
+          }
+        } catch (_) {}
       }
       // Navigation robuste — couvre tous les cas
       if (typeof onDone === 'function') {
