@@ -7,7 +7,8 @@ import { supabase } from '../config/supabase';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { COLORS, SIZES, RADIUS, SHADOW } from '../constants/theme';
 import { demarrerEssai } from '../utils/access';
-import { rejoindreAvecCode, sauvegarderCodeDuoSupabase } from '../utils/duo';
+import { rejoindreAvecCode, sauvegarderCodeDuoSupabase, sauvegarderDiagnosticDuo } from '../utils/duo';
+import { detecterFailles } from '../constants/planData';
 import { appGoMain } from '../utils/appState';
 import { useLanguage } from '../context/LanguageContext';
 
@@ -208,6 +209,14 @@ export default function InscriptionScreen({ navigation, route, onDone }) {
             resultDuo.message + '\n\n' + (t('duo.code_relancer') || 'Tu peux réessayer dans ton profil → Rejoindre un duo.')
           );
         }
+      }
+
+      // 5. Re-sync diagnostic vers Supabase (session active, genre disponible)
+      const planNiveau = await AsyncStorage.getItem('plan_niveau');
+      const planReponsesStr = await AsyncStorage.getItem('plan_reponses');
+      if (planNiveau && planReponsesStr) {
+        const planReponses = JSON.parse(planReponsesStr);
+        await sauvegarderDiagnosticDuo(planNiveau, detecterFailles(planReponses), planReponses).catch(() => {});
       }
 
       await AsyncStorage.setItem('onboarded', 'true');
