@@ -96,6 +96,7 @@ export default function OnboardingScreen({ navigation, onDone }) {
 
   const goBack = () => {
     const backs = {
+      [ETAPE.INTENTION]: ETAPE.BIENVENUE,
       [ETAPE.MODE_PLAN]: ETAPE.INTENTION,
       [ETAPE.DUO_QUESTIONS]: ETAPE.INTENTION,
       [ETAPE.INVITE_CODE]: intention === 'periode_delicate' ? ETAPE.MODE_PLAN : ETAPE.DUO_QUESTIONS,
@@ -135,7 +136,7 @@ export default function OnboardingScreen({ navigation, onDone }) {
   };
 
   const renderBack = () => {
-    const noBack = [ETAPE.INTENTION];
+    const noBack = [];
     if (noBack.includes(etape)) return <View style={s.backPlaceholder} />;
     return (
       <TouchableOpacity onPress={goBack} style={s.backBtn} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
