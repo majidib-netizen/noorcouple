@@ -216,7 +216,7 @@ export default function App() {
                 <Stack.Screen name="Onboarding">
                   {(props) => <OnboardingScreen {...props} onDone={handleOnDone} />}
                 </Stack.Screen>
-                <Stack.Screen name="Connexion">
+                <Stack.Screen name="ConnexionOnboarding">
                   {(props) => (
                     <ConnexionScreen
                       {...props}

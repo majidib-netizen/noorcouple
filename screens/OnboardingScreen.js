@@ -196,7 +196,7 @@ export default function OnboardingScreen({ navigation, onDone }) {
           </TouchableOpacity>
           <TouchableOpacity
             style={s.bienvenueConnexionLien}
-            onPress={() => navigation.navigate('Connexion')}
+            onPress={() => navigation.navigate('ConnexionOnboarding')}
             activeOpacity={0.7}
           >
             <Text style={s.bienvenueConnexionTxt}>

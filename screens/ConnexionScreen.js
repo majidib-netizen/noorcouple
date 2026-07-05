@@ -99,11 +99,6 @@ export default function ConnexionScreen({ navigation, route, onDone }) {
         navigation.reset({ index: 0, routes: [{ name: 'Main' }] });
       } else if (typeof onDone === 'function') {
         onDone();
-        // onDone may call setAppState('main') which registers 'Main' in the stack
-        // asynchronously. Wait one event-loop tick then reset navigation.
-        setTimeout(() => {
-          try { navigation.reset({ index: 0, routes: [{ name: 'Main' }] }); } catch (_) {}
-        }, 0);
       } else {
         appGoMain?.onGoMain?.();
       }
