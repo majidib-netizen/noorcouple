@@ -114,10 +114,14 @@ export default function ConnexionScreen({ navigation, route, onDone }) {
     if (!email.trim()) return Alert.alert('Email requis', 'Entre ton email pour réinitialiser ton mot de passe.');
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email.trim());
-      if (error) Alert.alert('Erreur', 'Email non trouvé.');
+      if (error) {
+        console.log('Erreur resetPasswordForEmail:', error);
+        Alert.alert('Erreur', error.message || 'Email non trouvé.');
+      }
       else Alert.alert('Email envoyé ✅', 'Vérifie ta boîte mail pour réinitialiser ton mot de passe.');
     } catch (e) {
-      Alert.alert('Erreur', 'Impossible d\'envoyer l\'email.');
+      console.log('Exception motDePasseOublie:', e);
+      Alert.alert('Erreur', e.message || 'Impossible d\'envoyer l\'email.');
     }
   };
 
