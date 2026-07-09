@@ -113,7 +113,9 @@ export default function ConnexionScreen({ navigation, route, onDone }) {
   const motDePasseOublie = async () => {
     if (!email.trim()) return Alert.alert('Email requis', 'Entre ton email pour réinitialiser ton mot de passe.');
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email.trim());
+      const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+        redirectTo: 'https://noorcouple-legal.vercel.app/reset-password.html'
+      });
       if (error) {
         console.log('Erreur resetPasswordForEmail:', error);
         Alert.alert('Erreur', error.message || 'Email non trouvé.');
