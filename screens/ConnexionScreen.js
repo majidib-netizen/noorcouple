@@ -165,8 +165,13 @@ export default function ConnexionScreen({ navigation, route, onDone }) {
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.inscriptionBtn} onPress={() => {
-            if (navigation && navigation.navigate) {
+            if (!navigation || !navigation.navigate) return;
+            if (isMainStack) {
               navigation.navigate('Inscription');
+            } else if (navigation.canGoBack && navigation.canGoBack()) {
+              navigation.goBack();
+            } else {
+              navigation.navigate('Onboarding');
             }
           }}>
             <Text style={styles.inscriptionText}>Pas encore de compte ? <Text style={{ color: COLORS.primary, fontWeight: '700' }}>Créer un compte</Text></Text>
