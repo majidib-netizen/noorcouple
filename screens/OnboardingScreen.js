@@ -519,7 +519,7 @@ export default function OnboardingScreen({ navigation, onDone }) {
         route={{ params: {
           contexte: intention === 'periode_delicate' ? 'plan' : 'questions',
           onContinuer: () => goTo(ETAPE.INSCRIPTION),
-          onFermer: () => goTo(ETAPE.DIAGNOSTIC),
+          onFermer: explorerGratuitement,
         }}}
       />
     );
