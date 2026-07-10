@@ -346,7 +346,7 @@ export default function InscriptionScreen({ navigation, route, onDone }) {
             {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.btnText}>{t('auth.btn_creer')}</Text>}
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.connexionBtn} onPress={() => navigation.navigate('Connexion')}>
+          <TouchableOpacity style={styles.connexionBtn} onPress={() => navigation.navigate(isMainStack ? 'Connexion' : 'ConnexionOnboarding')}>
             <Text style={styles.connexionText}>
               {t('auth.deja_compte')} <Text style={{ color: COLORS.primary, fontWeight: '700' }}>{t('auth.se_connecter')}</Text>
             </Text>
