@@ -32,6 +32,7 @@ const Stack = createNativeStackNavigator();
 
 import { appGoMain, appReset } from './utils/appState';
 export { appGoMain, appReset };
+import { initRevenueCat } from './utils/revenuecat';
 
 if (Platform.OS !== 'web') {
   Notifications.setNotificationHandler({
@@ -109,6 +110,8 @@ export default function App() {
       try {
         // Vérifie d'abord la session Supabase active
         const { data: { session } } = await supabase.auth.getSession();
+
+        initRevenueCat();
 
         if (session?.user) {
           // Session active — connecte directement
