@@ -1,7 +1,10 @@
 import { Platform } from 'react-native';
+import Constants, { ExecutionEnvironment } from 'expo-constants';
 import Purchases, { LOG_LEVEL } from 'react-native-purchases';
 
 const REVENUECAT_API_KEY = 'test_bAAclVHsbWhEGzuFbFqJzUDwohL';
+const isTestKey = REVENUECAT_API_KEY.startsWith('test_');
+const isProductionBuild = Constants.executionEnvironment !== ExecutionEnvironment.StoreClient;
 
 let isConfigured = false;
 
@@ -12,6 +15,10 @@ export const initRevenueCat = async () => {
   }
   if (isConfigured) {
     console.log('[REVENUECAT] Déjà initialisé, init ignorée.');
+    return;
+  }
+  if (isTestKey && isProductionBuild) {
+    console.log('[REVENUECAT] Clé test détectée en build production, init ignorée.');
     return;
   }
   try {
@@ -26,6 +33,10 @@ export const initRevenueCat = async () => {
 
 export const hasPremiumAccess = async () => {
   if (Platform.OS === 'web') return false;
+  if (!isConfigured) {
+    console.log('[REVENUECAT] hasPremiumAccess appelé sans SDK initialisé, ignoré.');
+    return false;
+  }
   try {
     const customerInfo = await Purchases.getCustomerInfo();
     const actif = Object.keys(customerInfo?.entitlements?.active || {}).length > 0;
@@ -39,6 +50,10 @@ export const hasPremiumAccess = async () => {
 
 export const getOfferings = async () => {
   if (Platform.OS === 'web') return null;
+  if (!isConfigured) {
+    console.log('[REVENUECAT] getOfferings appelé sans SDK initialisé, ignoré.');
+    return null;
+  }
   try {
     const offerings = await Purchases.getOfferings();
     console.log('[REVENUECAT] Offerings récupérées:', offerings?.current?.identifier || 'aucune offering courante');
@@ -51,6 +66,10 @@ export const getOfferings = async () => {
 
 export const purchasePackage = async (packageObj) => {
   if (Platform.OS === 'web') return null;
+  if (!isConfigured) {
+    console.log('[REVENUECAT] purchasePackage appelé sans SDK initialisé, ignoré.');
+    return null;
+  }
   if (!packageObj) {
     console.log('[REVENUECAT] purchasePackage appelé sans package.');
     return null;
