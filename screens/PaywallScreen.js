@@ -92,11 +92,6 @@ export default function PaywallScreen({ navigation, route }) {
           ))}
         </View>
 
-        {/* Message duo */}
-        {contexte === 'duo' && (
-          <Text style={styles.duoPartage}>{t('paywall.duo_partage')}</Text>
-        )}
-
         {/* Options tarifaires */}
         <View style={styles.optionsContainer}>
           <TouchableOpacity
@@ -145,6 +140,11 @@ export default function PaywallScreen({ navigation, route }) {
           <Text style={styles.ctaSecondaryTxt}>{t('paywall.cta_connexion')}</Text>
         </TouchableOpacity>
 
+        {/* Mention paiement couple */}
+        <View style={styles.coupleBadge}>
+          <Text style={styles.coupleBadgeTxt}>{t('paywall.duo_partage')}</Text>
+        </View>
+
         {/* Mention légale */}
         <Text style={styles.mentionLegale}>{t('paywall.renouvellement_auto')}</Text>
 
@@ -185,14 +185,21 @@ const styles = StyleSheet.create({
   avantageCheck: { fontSize: 16, color: COLORS.primary, fontWeight: '800', marginTop: 1 },
   avantageTxt: { flex: 1, fontSize: SIZES.sm, color: COLORS.text, fontWeight: '600', lineHeight: 20 },
 
-  duoPartage: {
+  coupleBadge: {
+    backgroundColor: COLORS.accentLight,
+    borderRadius: RADIUS.lg,
+    borderWidth: 1,
+    borderColor: COLORS.accent,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    marginBottom: 16,
+  },
+  coupleBadgeTxt: {
     fontSize: 12,
-    color: COLORS.textSecondary,
-    fontStyle: 'italic',
+    fontWeight: '600',
+    color: COLORS.primary,
     textAlign: 'center',
     lineHeight: 18,
-    marginBottom: 20,
-    paddingHorizontal: 8,
   },
 
   ctaPrimary: {
