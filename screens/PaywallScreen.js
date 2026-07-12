@@ -102,7 +102,7 @@ export default function PaywallScreen({ navigation, route }) {
               <Text style={styles.badgeBestTxt}>{t('paywall.meilleure_offre')}</Text>
             </View>
             <View style={styles.badgeEssai}>
-              <Text style={styles.badgeEssaiTxt}>{t('paywall.essai_5j') || '5 jours offerts'}</Text>
+              <Text style={styles.badgeEssaiTxt}>{t('paywall.essai_5j') || '7 jours offerts'}</Text>
             </View>
             <Text style={styles.optionTitre}>{t('paywall.annuel')}</Text>
             <Text style={styles.optionPrix}>75 €</Text>
@@ -116,7 +116,7 @@ export default function PaywallScreen({ navigation, route }) {
             onPress={() => setAbonnementChoisi('mensuel')}
           >
             <View style={styles.badgeEssai}>
-              <Text style={styles.badgeEssaiTxt}>{t('paywall.essai_5j') || '5 jours offerts'}</Text>
+              <Text style={styles.badgeEssaiTxt}>{t('paywall.essai_5j') || '7 jours offerts'}</Text>
             </View>
             <Text style={styles.optionTitre}>{t('paywall.mensuel')}</Text>
             <Text style={styles.optionPrix}>6,99 €</Text>
@@ -126,7 +126,7 @@ export default function PaywallScreen({ navigation, route }) {
 
         {/* CTA principal */}
         <TouchableOpacity style={styles.btnPrincipal} onPress={demarrerEssai}>
-          <Text style={styles.btnPrincipalTxt}>{t('paywall.demarrer_essai_5j') || 'Démarrer mon essai gratuit de 5 jours'}</Text>
+          <Text style={styles.btnPrincipalTxt}>{t('paywall.demarrer_essai_5j') || 'Démarrer mon essai gratuit de 7 jours'}</Text>
           <Text style={styles.btnPrincipalSousTxt}>
             {(t('paywall.essai_puis') || 'Puis {prix} — annulable à tout moment').replace(
               '{prix}',
