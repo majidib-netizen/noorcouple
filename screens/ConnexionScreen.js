@@ -8,8 +8,10 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { COLORS, SIZES, RADIUS, SHADOW } from '../constants/theme';
 import { appGoMain } from '../utils/appState';
 import { sauvegarderCodeDuoSupabase } from '../utils/duo';
+import { useLanguage } from '../context/LanguageContext';
 
 export default function ConnexionScreen({ navigation, route, onDone }) {
+  const { t } = useLanguage();
   const isMainStack = route?.params?.isMainStack;
   const [email, setEmail] = useState('');
   const [mdp, setMdp] = useState('');
@@ -17,7 +19,7 @@ export default function ConnexionScreen({ navigation, route, onDone }) {
   const [showMdp, setShowMdp] = useState(false);
 
   const connexion = async () => {
-    if (!email.trim() || !mdp) return Alert.alert('Champs manquants', 'Merci de remplir tous les champs.');
+    if (!email.trim() || !mdp) return Alert.alert(t('connexion.champs_manquants_titre'), t('connexion.champs_manquants_desc'));
     setLoading(true);
     try {
       const { data, error } = await supabase.auth.signInWithPassword({
@@ -31,7 +33,7 @@ export default function ConnexionScreen({ navigation, route, onDone }) {
       console.log('SESSION:', data?.session?.access_token ? 'OK' : 'NULL');
       if (error) {
         console.log('Erreur Supabase:', error.message);
-        Alert.alert('Erreur connexion', error.message);
+        Alert.alert(t('connexion.erreur_titre'), error.message);
         return;
       }
       if (data?.user) {
@@ -104,26 +106,26 @@ export default function ConnexionScreen({ navigation, route, onDone }) {
       }
     } catch (e) {
       console.log('Exception connexion:', e);
-      Alert.alert('Erreur', e.message || 'Impossible de se connecter. Vérifie ta connexion.');
+      Alert.alert(t('generic.erreur'), e.message || t('connexion.erreur_generique'));
     } finally {
       setLoading(false);
     }
   };
 
   const motDePasseOublie = async () => {
-    if (!email.trim()) return Alert.alert('Email requis', 'Entre ton email pour réinitialiser ton mot de passe.');
+    if (!email.trim()) return Alert.alert(t('connexion.email_requis_titre'), t('connexion.email_requis_desc'));
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
         redirectTo: 'https://noorcouple-legal.vercel.app/reset-password.html'
       });
       if (error) {
         console.log('Erreur resetPasswordForEmail:', error);
-        Alert.alert('Erreur', error.message || 'Email non trouvé.');
+        Alert.alert(t('generic.erreur'), error.message || t('connexion.email_non_trouve'));
       }
-      else Alert.alert('Email envoyé ✅', 'Vérifie ta boîte mail pour réinitialiser ton mot de passe.');
+      else Alert.alert(t('connexion.email_envoye_titre'), t('connexion.email_envoye_desc'));
     } catch (e) {
       console.log('Exception motDePasseOublie:', e);
-      Alert.alert('Erreur', e.message || 'Impossible d\'envoyer l\'email.');
+      Alert.alert(t('generic.erreur'), e.message || t('connexion.email_erreur_envoi'));
     }
   };
 
@@ -137,14 +139,14 @@ export default function ConnexionScreen({ navigation, route, onDone }) {
 
         <View style={styles.form}>
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Email</Text>
+            <Text style={styles.label}>{t('auth.label_email')}</Text>
             <TextInput style={styles.input} value={email} onChangeText={setEmail}
               placeholder="ton@email.com" placeholderTextColor={COLORS.textLight}
               keyboardType="email-address" autoCapitalize="none" />
           </View>
 
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Mot de passe</Text>
+            <Text style={styles.label}>{t('auth.label_mdp')}</Text>
             <View style={styles.mdpRow}>
               <TextInput style={[styles.input, { flex: 1, marginBottom: 0 }]}
                 value={mdp} onChangeText={setMdp}
@@ -157,11 +159,11 @@ export default function ConnexionScreen({ navigation, route, onDone }) {
           </View>
 
           <TouchableOpacity onPress={motDePasseOublie} style={styles.forgotBtn}>
-            <Text style={styles.forgotText}>Mot de passe oublié ?</Text>
+            <Text style={styles.forgotText}>{t('connexion.mdp_oublie')}</Text>
           </TouchableOpacity>
 
           <TouchableOpacity style={[styles.btn, loading && styles.btnDisabled]} onPress={connexion} disabled={loading}>
-            {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.btnText}>Se connecter →</Text>}
+            {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.btnText}>{t('connexion.btn_connexion')}</Text>}
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.inscriptionBtn} onPress={() => {
@@ -174,7 +176,7 @@ export default function ConnexionScreen({ navigation, route, onDone }) {
               navigation.navigate('Onboarding');
             }
           }}>
-            <Text style={styles.inscriptionText}>Pas encore de compte ? <Text style={{ color: COLORS.primary, fontWeight: '700' }}>Créer un compte</Text></Text>
+            <Text style={styles.inscriptionText}>{t('connexion.pas_de_compte')} <Text style={{ color: COLORS.primary, fontWeight: '700' }}>{t('connexion.creer_compte')}</Text></Text>
           </TouchableOpacity>
         </View>
       </KeyboardAvoidingView>

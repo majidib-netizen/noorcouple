@@ -408,6 +408,22 @@ export const translations = {
     'auth.compte_cree_msg': 'Votre compte a été créé. Connectez-vous maintenant.',
     'auth.erreur_impossible': 'Impossible de créer le compte.',
 
+    // Connexion
+    'connexion.champs_manquants_titre': 'Champs manquants',
+    'connexion.champs_manquants_desc': 'Merci de remplir tous les champs.',
+    'connexion.erreur_titre': 'Erreur connexion',
+    'connexion.erreur_generique': 'Impossible de se connecter. Vérifie ta connexion.',
+    'connexion.email_requis_titre': 'Email requis',
+    'connexion.email_requis_desc': 'Entre ton email pour réinitialiser ton mot de passe.',
+    'connexion.email_non_trouve': 'Email non trouvé.',
+    'connexion.email_envoye_titre': 'Email envoyé ✅',
+    'connexion.email_envoye_desc': 'Vérifie ta boîte mail pour réinitialiser ton mot de passe.',
+    'connexion.email_erreur_envoi': "Impossible d'envoyer l'email.",
+    'connexion.mdp_oublie': 'Mot de passe oublié ?',
+    'connexion.btn_connexion': 'Se connecter →',
+    'connexion.pas_de_compte': 'Pas encore de compte ?',
+    'connexion.creer_compte': 'Créer un compte',
+
     // Générique
     'generic.continuer': 'Continuer',
     'generic.retour': 'Retour',
@@ -830,6 +846,22 @@ export const translations = {
     'auth.compte_cree_titre': 'Account created ✅',
     'auth.compte_cree_msg': 'Your account has been created. Please log in now.',
     'auth.erreur_impossible': 'Unable to create account.',
+
+    // Login
+    'connexion.champs_manquants_titre': 'Missing fields',
+    'connexion.champs_manquants_desc': 'Please fill in all fields.',
+    'connexion.erreur_titre': 'Login error',
+    'connexion.erreur_generique': 'Unable to log in. Check your connection.',
+    'connexion.email_requis_titre': 'Email required',
+    'connexion.email_requis_desc': 'Enter your email to reset your password.',
+    'connexion.email_non_trouve': 'Email not found.',
+    'connexion.email_envoye_titre': 'Email sent ✅',
+    'connexion.email_envoye_desc': 'Check your inbox to reset your password.',
+    'connexion.email_erreur_envoi': 'Unable to send the email.',
+    'connexion.mdp_oublie': 'Forgot password?',
+    'connexion.btn_connexion': 'Log in →',
+    'connexion.pas_de_compte': "Don't have an account yet?",
+    'connexion.creer_compte': 'Create an account',
 
     // Generic
     'generic.continuer': 'Continue',
