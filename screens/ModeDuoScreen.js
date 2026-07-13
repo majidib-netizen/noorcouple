@@ -304,7 +304,7 @@ export default function ModeDuoScreen({ navigation }) {
         ['duo_jours_valides', '[]'],
       ]);
       try {
-        await scheduleNotificationsPlan(nc, 0, 'homme', fc);
+        await scheduleNotificationsPlan(nc, 0, genre, fc);
       } catch (e) { console.log('scheduleNotificationsPlan duo error:', e); }
       setEtape(ETAPES.PLAN_ACTIF);
     };

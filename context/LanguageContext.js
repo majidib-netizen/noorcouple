@@ -27,16 +27,22 @@ export function LanguageProvider({ children }) {
   const changeLanguage = async (lang) => {
     setLangue(lang);
     await AsyncStorage.setItem('app_language', lang);
-    const [notifQ, notifP, niveau, jourStr, genre] = await Promise.all([
+    const [notifQ, notifP, niveau, jourStr, genre, duoNiveau, duoJourStr] = await Promise.all([
       AsyncStorage.getItem('notif_questions'),
       AsyncStorage.getItem('notif_plan'),
       AsyncStorage.getItem('plan_niveau'),
       AsyncStorage.getItem('plan_notif_jour'),
       AsyncStorage.getItem('genre'),
+      AsyncStorage.getItem('duo_niveau_commun'),
+      AsyncStorage.getItem('duo_jour'),
     ]);
     if (notifQ !== 'false') await scheduleNotification();
-    if (notifP !== 'false' && niveau) {
-      await scheduleNotificationsPlan(niveau, jourStr ? Number(jourStr) : 1, genre || 'homme');
+    if (notifP !== 'false') {
+      if (niveau) {
+        await scheduleNotificationsPlan(niveau, jourStr ? Number(jourStr) : 1, genre || 'homme');
+      } else if (duoNiveau) {
+        await scheduleNotificationsPlan(duoNiveau, duoJourStr ? Number(duoJourStr) : 0, genre || 'homme');
+      }
     }
   };
 
