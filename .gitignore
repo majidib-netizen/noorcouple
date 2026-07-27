@@ -54,3 +54,5 @@ yarn-error.*
 # generated native folders
 /ios
 /android
+# Google service account keys (never commit!)
+noorcouple-*.json

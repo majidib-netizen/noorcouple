@@ -1,11 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View, Text, TouchableOpacity, StyleSheet,
-  SafeAreaView, ScrollView, Image, Linking,
+  SafeAreaView, ScrollView, Image, Linking, Alert, ActivityIndicator,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { COLORS, SIZES, RADIUS, SHADOW } from '../constants/theme';
 import { useLanguage } from '../context/LanguageContext';
+import { supabase } from '../config/supabase';
+import { aUnCompte, enregistrerPaiement } from '../utils/access';
+import { getOfferings, purchasePackage, getExpirationInfo } from '../utils/revenuecat';
 
 const TITRE_KEYS = {
   plan:      'paywall.titre_plan',
@@ -31,6 +34,28 @@ export default function PaywallScreen({ navigation, route }) {
 
   const titre = t(TITRE_KEYS[contexte] || 'paywall.titre_plan');
 
+  const [offerings, setOfferings] = useState(null);
+  const [loadingOfferings, setLoadingOfferings] = useState(true);
+  const [purchasing, setPurchasing] = useState(false);
+  const [abonnementChoisi, setAbonnementChoisi] = useState('annuel');
+
+  useEffect(() => {
+    const charger = async () => {
+      setLoadingOfferings(true);
+      const off = await getOfferings();
+      setOfferings(off);
+      setLoadingOfferings(false);
+    };
+    charger();
+  }, []);
+
+  const packageAnnuel = offerings?.current?.annual || null;
+  const packageMensuel = offerings?.current?.monthly || null;
+
+  const packageSelectionne = () => (
+    abonnementChoisi === 'annuel' ? packageAnnuel : packageMensuel
+  );
+
   const goInscription = () => {
     navigation.navigate('Inscription', { redirect, isMainStack: true });
   };
@@ -44,9 +69,57 @@ export default function PaywallScreen({ navigation, route }) {
     navigation.navigate('Main', { screen: 'Accueil' });
   };
 
-  const [abonnementChoisi, setAbonnementChoisi] = useState('annuel');
+  const acheter = async () => {
+    const pkg = packageSelectionne();
+    if (!pkg) {
+      Alert.alert(
+        t('paywall.erreur_titre') || 'Erreur',
+        t('paywall.erreur_offre_indisponible') || 'Offre indisponible pour le moment, réessaie plus tard.'
+      );
+      return;
+    }
 
-  const demarrerEssai = () => onContinuer ? onContinuer() : goInscription();
+    setPurchasing(true);
+    const resultat = await purchasePackage(pkg);
+    setPurchasing(false);
+
+    if (resultat.userCancelled) return;
+
+    if (!resultat.success) {
+      Alert.alert(
+        t('paywall.erreur_titre') || 'Erreur',
+        resultat.network
+          ? (t('paywall.erreur_reseau') || 'Problème de connexion. Vérifie ta connexion et réessaie.')
+          : (t('paywall.erreur_generique') || 'Une erreur est survenue. Réessaie plus tard.')
+      );
+      return;
+    }
+
+    // Achat validé côté store : on n'empêche jamais l'utilisateur de continuer,
+    // même si la synchro Supabase échoue (loggée seulement).
+    try {
+      const { expireAt, plan } = getExpirationInfo(resultat.customerInfo);
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user?.email && expireAt) {
+        await enregistrerPaiement(user.email, expireAt, plan);
+      }
+    } catch (e) {
+      console.log('[PAYWALL] Erreur enregistrerPaiement (achat déjà validé, on continue):', e?.message || e);
+    }
+
+    if (onContinuer) onContinuer();
+    else navigation.navigate('Main', { screen: 'Accueil' });
+  };
+
+  const demarrerEssai = async () => {
+    const compte = await aUnCompte();
+    if (!compte) {
+      if (onContinuer) { onContinuer(); return; }
+      goInscription();
+      return;
+    }
+    await acheter();
+  };
 
   const ouvrirCGU = async () => {
     const lang = await AsyncStorage.getItem('app_language');
@@ -61,6 +134,9 @@ export default function PaywallScreen({ navigation, route }) {
       ? 'https://noorcouple-legal.vercel.app/politique-confidentialite-en.html'
       : 'https://noorcouple-legal.vercel.app/politique-confidentialite-fr.html');
   };
+
+  const prixAnnuel = packageAnnuel?.product?.priceString || '75 €';
+  const prixMensuel = packageMensuel?.product?.priceString || '6,99 €';
 
   return (
     <SafeAreaView style={styles.safe}>
@@ -93,46 +169,60 @@ export default function PaywallScreen({ navigation, route }) {
         </View>
 
         {/* Options tarifaires */}
-        <View style={styles.optionsContainer}>
-          <TouchableOpacity
-            style={[styles.optionCard, abonnementChoisi === 'annuel' && styles.optionSelectionnee]}
-            onPress={() => setAbonnementChoisi('annuel')}
-          >
-            <View style={styles.badgeBest}>
-              <Text style={styles.badgeBestTxt}>{t('paywall.meilleure_offre')}</Text>
-            </View>
-            <View style={styles.badgeEssai}>
-              <Text style={styles.badgeEssaiTxt}>{t('paywall.essai_5j') || '7 jours offerts'}</Text>
-            </View>
-            <Text style={styles.optionTitre}>{t('paywall.annuel')}</Text>
-            <Text style={styles.optionPrix}>75 €</Text>
-            <Text style={styles.optionPeriode}>{t('paywall.par_an')}</Text>
-            <Text style={styles.optionDetail}>{t('paywall.equivalent_mensuel')}</Text>
-            <Text style={styles.optionEconomie}>{t('paywall.economie')}</Text>
-          </TouchableOpacity>
+        {loadingOfferings ? (
+          <ActivityIndicator style={{ marginVertical: 20 }} color={COLORS.primary} />
+        ) : (
+          <View style={styles.optionsContainer}>
+            <TouchableOpacity
+              style={[styles.optionCard, abonnementChoisi === 'annuel' && styles.optionSelectionnee]}
+              onPress={() => setAbonnementChoisi('annuel')}
+            >
+              <View style={styles.badgeBest}>
+                <Text style={styles.badgeBestTxt}>{t('paywall.meilleure_offre')}</Text>
+              </View>
+              <View style={styles.badgeEssai}>
+                <Text style={styles.badgeEssaiTxt}>{t('paywall.essai_5j') || '7 jours offerts'}</Text>
+              </View>
+              <Text style={styles.optionTitre}>{t('paywall.annuel')}</Text>
+              <Text style={styles.optionPrix}>{prixAnnuel}</Text>
+              <Text style={styles.optionPeriode}>{t('paywall.par_an')}</Text>
+              <Text style={styles.optionDetail}>{t('paywall.equivalent_mensuel')}</Text>
+              <Text style={styles.optionEconomie}>{t('paywall.economie')}</Text>
+            </TouchableOpacity>
 
-          <TouchableOpacity
-            style={[styles.optionCard, abonnementChoisi === 'mensuel' && styles.optionSelectionnee]}
-            onPress={() => setAbonnementChoisi('mensuel')}
-          >
-            <View style={styles.badgeEssai}>
-              <Text style={styles.badgeEssaiTxt}>{t('paywall.essai_5j') || '7 jours offerts'}</Text>
-            </View>
-            <Text style={styles.optionTitre}>{t('paywall.mensuel')}</Text>
-            <Text style={styles.optionPrix}>6,99 €</Text>
-            <Text style={styles.optionPeriode}>{t('paywall.par_mois')}</Text>
-          </TouchableOpacity>
-        </View>
+            <TouchableOpacity
+              style={[styles.optionCard, abonnementChoisi === 'mensuel' && styles.optionSelectionnee]}
+              onPress={() => setAbonnementChoisi('mensuel')}
+            >
+              <View style={styles.badgeEssai}>
+                <Text style={styles.badgeEssaiTxt}>{t('paywall.essai_5j') || '7 jours offerts'}</Text>
+              </View>
+              <Text style={styles.optionTitre}>{t('paywall.mensuel')}</Text>
+              <Text style={styles.optionPrix}>{prixMensuel}</Text>
+              <Text style={styles.optionPeriode}>{t('paywall.par_mois')}</Text>
+            </TouchableOpacity>
+          </View>
+        )}
 
         {/* CTA principal */}
-        <TouchableOpacity style={styles.btnPrincipal} onPress={demarrerEssai}>
-          <Text style={styles.btnPrincipalTxt}>{t('paywall.demarrer_essai_5j') || 'Démarrer mon essai gratuit de 7 jours'}</Text>
-          <Text style={styles.btnPrincipalSousTxt}>
-            {(t('paywall.essai_puis') || 'Puis {prix} — annulable à tout moment').replace(
-              '{prix}',
-              abonnementChoisi === 'annuel' ? '75 €/an' : '6,99 €/mois'
-            )}
-          </Text>
+        <TouchableOpacity
+          style={[styles.btnPrincipal, purchasing && styles.btnPrincipalDisabled]}
+          onPress={demarrerEssai}
+          disabled={purchasing}
+        >
+          {purchasing ? (
+            <ActivityIndicator color="#fff" />
+          ) : (
+            <>
+              <Text style={styles.btnPrincipalTxt}>{t('paywall.demarrer_essai_5j') || 'Démarrer mon essai gratuit de 7 jours'}</Text>
+              <Text style={styles.btnPrincipalSousTxt}>
+                {(t('paywall.essai_puis') || 'Puis {prix} — annulable à tout moment').replace(
+                  '{prix}',
+                  abonnementChoisi === 'annuel' ? `${prixAnnuel}/an` : `${prixMensuel}/mois`
+                )}
+              </Text>
+            </>
+          )}
         </TouchableOpacity>
 
         {/* CTA secondaire */}
@@ -298,6 +388,9 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     alignItems: 'center',
     marginVertical: 16,
+  },
+  btnPrincipalDisabled: {
+    opacity: 0.7,
   },
   btnPrincipalTxt: {
     fontSize: 16,

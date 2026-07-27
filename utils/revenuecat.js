@@ -2,9 +2,17 @@ import { Platform } from 'react-native';
 import Constants, { ExecutionEnvironment } from 'expo-constants';
 import Purchases, { LOG_LEVEL } from 'react-native-purchases';
 
-const REVENUECAT_API_KEY = 'test_bAAclVHsbWhEGzuFbFqJzUDwohL';
-const isTestKey = REVENUECAT_API_KEY.startsWith('test_');
+const REVENUECAT_API_KEY = Platform.OS === 'ios'
+  ? process.env.EXPO_PUBLIC_REVENUECAT_IOS_KEY
+  : process.env.EXPO_PUBLIC_REVENUECAT_ANDROID_KEY;
+
+const isTestKey = !!REVENUECAT_API_KEY && REVENUECAT_API_KEY.startsWith('test_');
 const isProductionBuild = Constants.executionEnvironment !== ExecutionEnvironment.StoreClient;
+
+const PLAN_PAR_PRODUIT = {
+  noorcouple_monthly: 'mensuel',
+  noorcouple_annual: 'annuel',
+};
 
 let isConfigured = false;
 
@@ -15,6 +23,10 @@ export const initRevenueCat = async () => {
   }
   if (isConfigured) {
     console.log('[REVENUECAT] Déjà initialisé, init ignorée.');
+    return;
+  }
+  if (!REVENUECAT_API_KEY) {
+    console.log('[REVENUECAT] Clé API manquante pour', Platform.OS, '— init ignorée.');
     return;
   }
   if (isTestKey && isProductionBuild) {
@@ -65,25 +77,38 @@ export const getOfferings = async () => {
 };
 
 export const purchasePackage = async (packageObj) => {
-  if (Platform.OS === 'web') return null;
+  if (Platform.OS === 'web') {
+    return { success: false, userCancelled: false, network: false, message: 'web_not_supported', customerInfo: null };
+  }
   if (!isConfigured) {
     console.log('[REVENUECAT] purchasePackage appelé sans SDK initialisé, ignoré.');
-    return null;
+    return { success: false, userCancelled: false, network: false, message: 'not_configured', customerInfo: null };
   }
   if (!packageObj) {
     console.log('[REVENUECAT] purchasePackage appelé sans package.');
-    return null;
+    return { success: false, userCancelled: false, network: false, message: 'no_package', customerInfo: null };
   }
   try {
     const result = await Purchases.purchasePackage(packageObj);
     console.log('[REVENUECAT] Achat réussi:', packageObj.identifier);
-    return result;
+    return { success: true, userCancelled: false, network: false, message: null, customerInfo: result?.customerInfo || null };
   } catch (e) {
     if (e?.userCancelled) {
       console.log('[REVENUECAT] Achat annulé par l\'utilisateur.');
-    } else {
-      console.log('[REVENUECAT] Erreur purchasePackage:', e?.message || e);
+      return { success: false, userCancelled: true, network: false, message: e?.message || 'user_cancelled', customerInfo: null };
     }
-    return null;
+    const network = e?.code === 'NETWORK_ERROR'
+      || (typeof e?.underlyingErrorMessage === 'string' && e.underlyingErrorMessage.toLowerCase().includes('network'));
+    console.log('[REVENUECAT] Erreur purchasePackage:', e?.message || e);
+    return { success: false, userCancelled: false, network: !!network, message: e?.message || 'purchase_error', customerInfo: null };
   }
+};
+
+export const getExpirationInfo = (customerInfo) => {
+  const entitlement = customerInfo?.entitlements?.active?.['premium'];
+  if (!entitlement) return { expireAt: null, plan: null };
+  const expireAt = entitlement.expirationDate
+    || (entitlement.expirationDateMillis ? new Date(entitlement.expirationDateMillis).toISOString() : null);
+  const plan = PLAN_PAR_PRODUIT[entitlement.productIdentifier] || null;
+  return { expireAt, plan };
 };

@@ -68,7 +68,7 @@ export default function ConnexionScreen({ navigation, route, onDone }) {
           const userEmail = data.user.email || email.trim().toLowerCase();
           const { data: duoData } = await supabase
             .from('duos')
-            .select('code, initiateur, paiement_valide, diagnostic_initiateur, diagnostic_conjoint')
+            .select('code, initiateur, paiement_valide, expire_at, diagnostic_initiateur, diagnostic_conjoint')
             .or(`initiateur.eq.${userEmail},conjoint.eq.${userEmail}`)
             .eq('statut', 'actif')
             .single();
@@ -91,8 +91,10 @@ export default function ConnexionScreen({ navigation, route, onDone }) {
             }
             if (duoData.paiement_valide) {
               await AsyncStorage.setItem('duo_partenaire_paye', 'true');
+              if (duoData.expire_at) await AsyncStorage.setItem('duo_partenaire_expire_at', duoData.expire_at);
             } else {
               await AsyncStorage.removeItem('duo_partenaire_paye');
+              await AsyncStorage.removeItem('duo_partenaire_expire_at');
             }
           }
         } catch (_) {}

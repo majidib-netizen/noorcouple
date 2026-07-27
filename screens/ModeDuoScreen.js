@@ -124,9 +124,10 @@ export default function ModeDuoScreen({ navigation }) {
   // ─── VÉRIFIER PAIEMENT DUO ───────────────────────────────────────────────────
   const verifierPaiementDuo = async (code) => {
     try {
-      const { data: duoData } = await supabase.from('duos').select('paiement_valide').eq('code', code).single();
+      const { data: duoData } = await supabase.from('duos').select('paiement_valide, expire_at').eq('code', code).single();
       if (duoData?.paiement_valide) {
         await AsyncStorage.setItem('duo_partenaire_paye', 'true');
+        if (duoData.expire_at) await AsyncStorage.setItem('duo_partenaire_expire_at', duoData.expire_at);
       }
     } catch (e) { console.log('verifierPaiementDuo error:', e); }
   };

@@ -14,7 +14,10 @@
       "Bash(Get-Content \"C:\\\\Users\\\\mibou\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\C--Sakina-sakina\\\\de632d10-93ba-4a9b-80fb-3282b0037274\\\\tasks\\\\b15clj5tx.output\")",
       "Bash(Select-Object -First 30)",
       "Bash(git add *)",
-      "Bash(git commit *)"
+      "Bash(git commit *)",
+      "Bash(npx babel *)",
+      "Bash(echo \"node check exit: $?\")",
+      "Bash(echo \"EXIT:$?\")"
     ]
   }
 }

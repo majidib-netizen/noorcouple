@@ -135,11 +135,13 @@ export default function App() {
           try {
             const duoCode = await AsyncStorage.getItem('duo_code') || await AsyncStorage.getItem('duo_code_conjoint');
             if (duoCode) {
-              const { data: duoData } = await supabase.from('duos').select('paiement_valide').eq('code', duoCode).single();
+              const { data: duoData } = await supabase.from('duos').select('paiement_valide, expire_at').eq('code', duoCode).single();
               if (duoData?.paiement_valide) {
                 await AsyncStorage.setItem('duo_partenaire_paye', 'true');
+                if (duoData.expire_at) await AsyncStorage.setItem('duo_partenaire_expire_at', duoData.expire_at);
               } else {
                 await AsyncStorage.removeItem('duo_partenaire_paye');
+                await AsyncStorage.removeItem('duo_partenaire_expire_at');
               }
             }
           } catch (_) {}
