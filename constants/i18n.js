@@ -198,6 +198,9 @@ export const translations = {
     'duo.code_complet_desc': 'Ce duo est déjà complet. Demande à ton conjoint(e) de générer un nouveau code.',
     'duo.code_expire_titre': 'Code expiré',
     'duo.code_expire_desc': 'Ce code a expiré. Demande à ton conjoint(e) de générer un nouveau code.',
+    'duo.rejoindre_deja_dans_duo': 'Tu es déjà dans un duo. Saisir un nouveau code te reliera à un autre duo et abandonnera le précédent.',
+    'duo.changer_duo_titre': 'Changer de duo ?',
+    'duo.changer_duo_desc': 'Tu vas quitter ton duo actuel et rejoindre un nouveau duo avec ce code. Continuer ?',
 
     // Questions
     'questions.titre': 'Discutons',
@@ -643,6 +646,9 @@ export const translations = {
     'duo.code_complet_desc': 'This duo is already complete. Ask your spouse to generate a new code.',
     'duo.code_expire_titre': 'Code expired',
     'duo.code_expire_desc': 'This code has expired. Ask your spouse to generate a new code.',
+    'duo.rejoindre_deja_dans_duo': "You're already in a duo. Entering a new code will link you to a different duo and abandon the current one.",
+    'duo.changer_duo_titre': 'Change duo?',
+    'duo.changer_duo_desc': "You're about to leave your current duo and join a new one with this code. Continue?",
 
     // Questions
     'questions.titre': 'Discuss',

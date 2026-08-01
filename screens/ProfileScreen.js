@@ -471,25 +471,38 @@ export default function ProfileScreen() {
           </View>
         ) : null}
 
-        {/* Duo — rejoindre ou statut */}
-        {!monCode && !duoConjoint ? (
+        {/* Duo — statut si déjà relié via un code conjoint */}
+        {duoConjoint ? (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>👫 {t('profil.rejoindre_duo')}</Text>
-            <View style={styles.card}>
-              <Text style={styles.rowSub}>{t('profil.rejoindre_duo_desc')}</Text>
-              <View style={{ flexDirection: 'row', gap: 10, marginTop: 12 }}>
-                <TextInput
-                  style={[styles.prenomInput, { flex: 1 }]}
-                  value={codeDuoInput}
-                  onChangeText={(v) => setCodeDuoInput(v.toUpperCase())}
-                  placeholder="NOOR-XXXXXX"
-                  placeholderTextColor={COLORS.textLight}
-                  autoCapitalize="characters"
-                />
-                <TouchableOpacity
-                  style={[styles.saveBtn, { opacity: codeDuoInput.replace(/-/g, '').length < 10 || joinLoading ? 0.5 : 1 }]}
-                  disabled={codeDuoInput.replace(/-/g, '').length < 10 || joinLoading}
-                  onPress={async () => {
+            <View style={styles.codeCard}>
+              <Text style={styles.codeLabel}>{t('duo.duo_actif')}</Text>
+              <Text style={styles.codeValue}>{duoConjoint}</Text>
+            </View>
+          </View>
+        ) : null}
+
+        {/* Duo — rejoindre (toujours visible, même avec un duo local existant) */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>👫 {t('profil.rejoindre_duo')}</Text>
+          <View style={styles.card}>
+            <Text style={styles.rowSub}>{t('profil.rejoindre_duo_desc')}</Text>
+            {(monCode || duoConjoint) && (
+              <Text style={styles.dejaDansDuoAvertissement}>⚠️ {t('duo.rejoindre_deja_dans_duo')}</Text>
+            )}
+            <View style={{ flexDirection: 'row', gap: 10, marginTop: 12 }}>
+              <TextInput
+                style={[styles.prenomInput, { flex: 1 }]}
+                value={codeDuoInput}
+                onChangeText={(v) => setCodeDuoInput(v.toUpperCase())}
+                placeholder="NOOR-XXXXXX"
+                placeholderTextColor={COLORS.textLight}
+                autoCapitalize="characters"
+              />
+              <TouchableOpacity
+                style={[styles.saveBtn, { opacity: codeDuoInput.replace(/-/g, '').length < 10 || joinLoading ? 0.5 : 1 }]}
+                disabled={codeDuoInput.replace(/-/g, '').length < 10 || joinLoading}
+                onPress={async () => {
+                  const rejoindre = async () => {
                     setJoinLoading(true);
                     const { data: { user } } = await supabase.auth.getUser();
                     if (!user?.email) {
@@ -505,29 +518,54 @@ export default function ProfileScreen() {
                       );
                       return;
                     }
+                    if (monCode || duoConjoint) {
+                      await AsyncStorage.multiRemove(['duo_code', 'duo_code_conjoint', 'duo_partenaire_paye', 'duo_partenaire_expire_at']);
+                    }
                     const resultat = await rejoindreAvecCode(codeDuoInput);
                     if (!resultat.succes) {
-                      Alert.alert(t('duo.code_invalide'), resultat.message || t('duo.code_invalide_desc'));
+                      const titres = {
+                        invalide: t('duo.code_invalide'),
+                        complet: t('duo.code_complet_titre'),
+                        expire: t('duo.code_expire_titre'),
+                      };
+                      const messages = {
+                        invalide: t('duo.code_invalide_desc'),
+                        complet: t('duo.code_complet_desc'),
+                        expire: t('duo.code_expire_desc'),
+                      };
+                      Alert.alert(
+                        titres[resultat.erreur] || t('duo.code_invalide'),
+                        messages[resultat.erreur] || resultat.message || t('duo.code_invalide_desc')
+                      );
                     } else {
+                      setMonCode('');
+                      setConjointConnecte(false);
+                      setCodeExpireAt(null);
                       setDuoConjoint(codeDuoInput.trim().toUpperCase());
                       setCodeDuoInput('');
                     }
                     setJoinLoading(false);
-                  }}
-                >
-                  <Text style={styles.saveBtnText}>{joinLoading ? '...' : t('profil.rejoindre_btn')}</Text>
-                </TouchableOpacity>
-              </View>
+                  };
+
+                  if (monCode || duoConjoint) {
+                    Alert.alert(
+                      t('duo.changer_duo_titre'),
+                      t('duo.changer_duo_desc'),
+                      [
+                        { text: t('generic.annuler'), style: 'cancel' },
+                        { text: t('generic.continuer'), onPress: rejoindre },
+                      ]
+                    );
+                  } else {
+                    await rejoindre();
+                  }
+                }}
+              >
+                <Text style={styles.saveBtnText}>{joinLoading ? '...' : t('profil.rejoindre_btn')}</Text>
+              </TouchableOpacity>
             </View>
           </View>
-        ) : duoConjoint ? (
-          <View style={styles.section}>
-            <View style={styles.codeCard}>
-              <Text style={styles.codeLabel}>{t('duo.duo_actif')}</Text>
-              <Text style={styles.codeValue}>{duoConjoint}</Text>
-            </View>
-          </View>
-        ) : null}
+        </View>
 
         {/* Langue */}
         <View style={styles.section}>
@@ -684,6 +722,7 @@ const styles = StyleSheet.create({
   row: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   rowTitle: { fontSize: SIZES.sm, fontWeight: '700', color: COLORS.text },
   rowSub: { fontSize: SIZES.xs, color: COLORS.textSecondary, marginTop: 2 },
+  dejaDansDuoAvertissement: { fontSize: SIZES.xs, color: COLORS.warning, fontWeight: '600', marginTop: 8 },
   testBtn: { marginTop: 4, padding: 14, borderRadius: RADIUS.lg, borderWidth: 1.5, borderColor: COLORS.primary + '55', backgroundColor: COLORS.primary + '10', alignItems: 'center' },
   testBtnTxt: { fontSize: SIZES.sm, color: COLORS.primary, fontWeight: '600' },
   aboutText: { fontSize: SIZES.sm, color: COLORS.text, lineHeight: 22, marginBottom: 16 },
