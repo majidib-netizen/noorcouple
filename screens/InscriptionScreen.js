@@ -211,9 +211,19 @@ export default function InscriptionScreen({ navigation, route, onDone }) {
             }
           } catch (_) {}
         } else {
+          const titres = {
+            invalide: t('duo.code_invalide'),
+            complet: t('duo.code_complet_titre'),
+            expire: t('duo.code_expire_titre'),
+          };
+          const messages = {
+            invalide: t('duo.code_invalide_desc'),
+            complet: t('duo.code_complet_desc'),
+            expire: t('duo.code_expire_desc'),
+          };
           Alert.alert(
-            t('duo.erreur_titre') || 'Problème avec le code Duo',
-            resultDuo.message + '\n\n' + (t('duo.code_relancer') || 'Tu peux réessayer dans ton profil → Rejoindre un duo.')
+            titres[resultDuo.erreur] || t('duo.code_invalide'),
+            (messages[resultDuo.erreur] || t('duo.code_invalide_desc')) + '\n\n' + t('duo.code_relancer')
           );
         }
       }
