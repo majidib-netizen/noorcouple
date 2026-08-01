@@ -10,6 +10,17 @@ import { useLanguage } from '../context/LanguageContext';
 import { rejoindreAvecCode, regenererCodeDuo } from '../utils/duo';
 import { supabase } from '../config/supabase';
 
+const formatExpiration = (iso, langue) => {
+  if (!iso) return '';
+  const d = new Date(iso);
+  const jj = String(d.getDate()).padStart(2, '0');
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  const hh = String(d.getHours()).padStart(2, '0');
+  const min = String(d.getMinutes()).padStart(2, '0');
+  const connecteur = langue === 'en' ? 'at' : 'à';
+  return `${jj}/${mm} ${connecteur} ${hh}:${min}`;
+};
+
 // ─── TimePickerCard ────────────────────────────────────────────────────────────
 const TimePickerCard = ({ label, heure, minutes, ampm, onHeureChange, onMinutesChange, onAmPmChange, couleur, langue }) => {
   const pad = (n) => String(n).padStart(2, '0');
@@ -134,6 +145,7 @@ export default function ProfileScreen() {
   const [prenom, setPrenom] = useState('');
   const [editPrenom, setEditPrenom] = useState(false);
   const [monCode, setMonCode] = useState('');
+  const [codeExpireAt, setCodeExpireAt] = useState(null);
   const [duoConjoint, setDuoConjoint] = useState('');
   const [conjointConnecte, setConjointConnecte] = useState(false);
   const [codeDuoInput, setCodeDuoInput] = useState('');
@@ -183,10 +195,11 @@ export default function ProfileScreen() {
       try {
         const { data: duoData } = await supabase
           .from('duos')
-          .select('conjoint')
+          .select('conjoint, code_expire_at')
           .eq('code', dc)
           .single();
         if (duoData && duoData.conjoint) setConjointConnecte(true);
+        if (duoData?.code_expire_at) setCodeExpireAt(duoData.code_expire_at);
       } catch (_) {}
     }
     if (dcj) setDuoConjoint(dcj);
@@ -409,6 +422,13 @@ export default function ProfileScreen() {
             <View style={styles.codeCard}>
               <Text style={styles.codeLabel}>{t('profil.mon_code_duo')}</Text>
               <Text style={styles.codeValue}>{monCode}</Text>
+              {codeExpireAt && (
+                new Date(codeExpireAt) < new Date() ? (
+                  <Text style={styles.codeExpireAvertissement}>⚠️ {t('profil.code_expire_avertissement')}</Text>
+                ) : (
+                  <Text style={styles.codeExpireTxt}>{t('duo.expire_le').replace('{date}', formatExpiration(codeExpireAt, langue))}</Text>
+                )
+              )}
               {conjointConnecte && (
                 <View style={{ backgroundColor: '#E8F5E9', padding: 8, borderRadius: 8, marginTop: 4, flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
                   <Text style={{ color: '#2E7D32', fontSize: 14, fontWeight: '500' }}>✅ {t('duo.duo_actif')}</Text>
@@ -697,6 +717,16 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     color: COLORS.primary,
     letterSpacing: 4,
+  },
+  codeExpireTxt: {
+    fontSize: 11,
+    color: COLORS.textLight,
+  },
+  codeExpireAvertissement: {
+    fontSize: 12,
+    color: COLORS.warning,
+    fontWeight: '600',
+    textAlign: 'center',
   },
   shareCodeBtn: {
     backgroundColor: COLORS.primary,

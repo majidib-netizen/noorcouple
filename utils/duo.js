@@ -49,6 +49,11 @@ const sauvegarderCodeDuoSupabase = async (code) => {
       return;
     }
 
+    // Ceinture + bretelles : le défaut Supabase pose déjà code_expire_at à
+    // now()+48h, mais on le fixe aussi explicitement côté client pour ne pas
+    // dépendre uniquement de la config serveur.
+    const codeExpireAt = new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString();
+
     const { data, error } = await supabase
       .from('duos')
       .insert({
@@ -56,6 +61,7 @@ const sauvegarderCodeDuoSupabase = async (code) => {
         initiateur: userEmail,
         statut: 'en_attente',
         created_at: new Date().toISOString(),
+        code_expire_at: codeExpireAt,
       })
       .select();
 
@@ -144,12 +150,17 @@ export const rejoindreAvecCode = async (code) => {
 
     const { data, error } = await supabase
       .from('duos')
-      .select('code, statut, initiateur, conjoint')
+      .select('code, statut, initiateur, conjoint, code_expire_at, tentatives_rejointe')
       .eq('code', codeNorm)
       .single();
 
     if (error || !data) {
-      return { succes: false, message: 'Code invalide. Vérifiez le code et réessayez.' };
+      return { succes: false, erreur: 'invalide', message: 'Code invalide. Vérifiez le code et réessayez.' };
+    }
+
+    // Code archivé (régénéré ou duo quitté) : invalide, même si conjoint est vide
+    if (data.statut === 'archive') {
+      return { succes: false, erreur: 'invalide', message: 'Code invalide. Vérifiez le code et réessayez.' };
     }
 
     // Cas : l'utilisateur est déjà membre de ce duo → laisser passer
@@ -164,27 +175,60 @@ export const rejoindreAvecCode = async (code) => {
       return { succes: true, dejaMembre: true };
     }
 
+    // Compteur de tentatives — silencieux, non bloquant, sert de base à un
+    // éventuel rate limiting futur.
+    try {
+      await supabase
+        .from('duos')
+        .update({ tentatives_rejointe: (data.tentatives_rejointe || 0) + 1 })
+        .eq('code', codeNorm);
+    } catch (_) {}
+
     // Cas : duo déjà complet avec un autre conjoint
     if (data.statut === 'actif' && data.conjoint && data.conjoint !== user.email) {
       return {
         succes: false,
         dejaComplet: true,
+        erreur: 'complet',
         message: 'Ce duo est déjà complet. Demande à ton conjoint(e) de générer un nouveau code.',
       };
     }
 
-    // Mise à jour normale
-    const { error: updateError } = await supabase
+    // Cas : code non utilisé mais expiré (48h)
+    if (data.code_expire_at && new Date(data.code_expire_at) < new Date()) {
+      return {
+        succes: false,
+        expire: true,
+        erreur: 'expire',
+        message: 'Ce code a expiré. Demande à ton conjoint(e) de générer un nouveau code.',
+      };
+    }
+
+    // Mise à jour normale — conditionnelle sur statut = 'en_attente' pour éviter
+    // qu'une rejointe simultanée par deux personnes n'écrase le conjoint déjà posé
+    const { data: updated, error: updateError } = await supabase
       .from('duos')
       .update({
         conjoint: user.email,
         statut: 'actif',
         joined_at: new Date().toISOString(),
       })
-      .eq('code', codeNorm);
+      .eq('code', codeNorm)
+      .eq('statut', 'en_attente')
+      .select();
 
     if (updateError) {
       return { succes: false, message: updateError.message };
+    }
+
+    if (!updated || updated.length === 0) {
+      // Quelqu'un d'autre a rejoint entre le SELECT et l'UPDATE ci-dessus
+      return {
+        succes: false,
+        dejaComplet: true,
+        erreur: 'complet',
+        message: 'Ce duo est déjà complet. Demande à ton conjoint(e) de générer un nouveau code.',
+      };
     }
 
     await AsyncStorage.setItem('duo_code_conjoint', codeNorm);
@@ -457,6 +501,12 @@ export const regenererCodeDuo = async () => {
     ]);
 
     const nouveauCode = await obtenirOuCreerCode();
+
+    // Ceinture + bretelles : garantit une expiration fraîche de 48h sur le
+    // nouveau code, indépendamment de ce que l'insert initial a posé.
+    const codeExpireAt = new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString();
+    await supabase.from('duos').update({ code_expire_at: codeExpireAt }).eq('code', nouveauCode);
+
     return { succes: true, code: nouveauCode };
   } catch (e) {
     return { succes: false, message: e.message };

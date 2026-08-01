@@ -18,6 +18,17 @@ import { obtenirOuCreerCode, verifierDuoActif, rejoindreAvecCode } from '../util
 
 const formatHeure = (h) => { const [hh, mm] = h.split(':'); return `${hh}h${mm === '00' ? '' : mm}`; };
 
+const formatExpiration = (iso, langue) => {
+  if (!iso) return '';
+  const d = new Date(iso);
+  const jj = String(d.getDate()).padStart(2, '0');
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  const hh = String(d.getHours()).padStart(2, '0');
+  const min = String(d.getMinutes()).padStart(2, '0');
+  const connecteur = langue === 'en' ? 'at' : 'à';
+  return `${jj}/${mm} ${connecteur} ${hh}:${min}`;
+};
+
 const ETAPES = {
   ACCUEIL: 'accueil',
   ATTENTE: 'attente',         // Code généré, en attente du conjoint
@@ -27,7 +38,7 @@ const ETAPES = {
 };
 
 export default function ModeDuoScreen({ navigation }) {
-  const { t } = useLanguage();
+  const { t, langue } = useLanguage();
   const { acces, joursRestants, loading: loadingAcces } = useAccesPremium();
   useFocusEffect(
     React.useCallback(() => {
@@ -38,6 +49,7 @@ export default function ModeDuoScreen({ navigation }) {
   );
   const [etape, setEtape] = useState(ETAPES.ACCUEIL);
   const [monCode, setMonCode] = useState('');
+  const [monCodeExpireAt, setMonCodeExpireAt] = useState(null);
   const [codeInput, setCodeInput] = useState('');
   const [userId, setUserId] = useState('');
   const [duoId, setDuoId] = useState('');
@@ -141,6 +153,10 @@ export default function ModeDuoScreen({ navigation }) {
       const code = await obtenirOuCreerCode();
       setMonCode(code);
       await AsyncStorage.setItem('duo_mon_code', code);
+      try {
+        const { data } = await supabase.from('duos').select('code_expire_at').eq('code', code).single();
+        if (data?.code_expire_at) setMonCodeExpireAt(data.code_expire_at);
+      } catch (_) {}
       setEtape(ETAPES.ATTENTE);
     } catch (e) {
       Alert.alert('Erreur', 'Impossible de créer le code. Vérifie ta connexion.');
@@ -169,32 +185,26 @@ export default function ModeDuoScreen({ navigation }) {
     }
     setLoading(true);
     try {
-      const { data: duoData, error: fetchErr } = await supabase.from('duos').select('*').eq('code', codeVal).single();
-
-      if (fetchErr || !duoData) {
-        Alert.alert('Code introuvable', 'Ce code n\'existe pas ou a expiré.');
-        setLoading(false);
-        return;
-      }
-
-
-      if (duoData?.statut === 'complet') {
-        Alert.alert('Code déjà utilisé', 'Ce code a déjà été utilisé.');
-        setLoading(false);
-        return;
-      }
-
-      // [DUO REJOIN] Délégation à rejoindreAvecCode
-      console.log('[DUO REJOIN] Délégation à rejoindreAvecCode pour code:', codeVal);
       const resultJoin = await rejoindreAvecCode(codeVal);
       if (!resultJoin.succes) {
-        Alert.alert('Impossible de rejoindre', resultJoin.message || 'Vérifie le code et ta connexion.');
+        const titres = {
+          invalide: t('duo.code_invalide'),
+          complet: t('duo.code_complet_titre'),
+          expire: t('duo.code_expire_titre'),
+        };
+        const messages = {
+          invalide: t('duo.code_invalide_desc'),
+          complet: t('duo.code_complet_desc'),
+          expire: t('duo.code_expire_desc'),
+        };
+        Alert.alert(
+          titres[resultJoin.erreur] || 'Impossible de rejoindre',
+          messages[resultJoin.erreur] || resultJoin.message || 'Vérifie le code et ta connexion.'
+        );
         setLoading(false);
         return;
       }
 
-      // [DUO REJOIN] Mise à jour genre_conjoint séparée
-      console.log('[DUO REJOIN] Mise à jour genre_conjoint séparée');
       await supabase.from('duos').update({ genre_conjoint: genre }).eq('code', codeVal);
 
       setDuoId(codeVal);
@@ -203,7 +213,6 @@ export default function ModeDuoScreen({ navigation }) {
       setReponses({});
       setEtape(ETAPES.DIAGNOSTIC);
       ecouterDuo(codeVal, userId);
-      console.log('[DUO FIX] Modification 1/2 appliquée: rejoindreDuo délègue à rejoindreAvecCode');
 
     } catch (e) {
       Alert.alert('Erreur', 'Impossible de rejoindre. Vérifie ta connexion.');
@@ -494,6 +503,11 @@ export default function ModeDuoScreen({ navigation }) {
             <Text style={s.codeLbl}>Ton code d'invitation</Text>
             <Text style={s.codeVal}>{monCode}</Text>
             <Text style={s.codeSub}>Envoie ce code à ton/ta conjoint(e)</Text>
+            {monCodeExpireAt && (
+              <Text style={s.codeExpire}>
+                {t('duo.expire_le').replace('{date}', formatExpiration(monCodeExpireAt, langue))}
+              </Text>
+            )}
           </View>
 
           <TouchableOpacity
@@ -756,6 +770,7 @@ const s = StyleSheet.create({
   codeLbl: { fontSize: 11, fontWeight: '700', color: COLORS.primary, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 8 },
   codeVal: { fontSize: 28, fontWeight: '800', color: COLORS.text, letterSpacing: 4, marginBottom: 6 },
   codeSub: { fontSize: 12, color: COLORS.textSecondary },
+  codeExpire: { fontSize: 11, color: COLORS.textLight, marginTop: 4 },
 
   // Join
   joinCard: { backgroundColor: COLORS.white, borderRadius: 16, padding: 18, marginHorizontal: 18, marginBottom: 14, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 8, elevation: 2 },

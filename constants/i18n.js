@@ -193,6 +193,11 @@ export const translations = {
     'duo.compte_requis_titre': 'Compte requis',
     'duo.compte_requis_msg': 'Tu dois créer un compte pour rejoindre ce duo. Ton code sera appliqué automatiquement après ton inscription.',
     'duo.creer_compte_btn': 'Créer mon compte',
+    'duo.expire_le': 'Expire le {date}',
+    'duo.code_complet_titre': 'Duo déjà complet',
+    'duo.code_complet_desc': 'Ce duo est déjà complet. Demande à ton conjoint(e) de générer un nouveau code.',
+    'duo.code_expire_titre': 'Code expiré',
+    'duo.code_expire_desc': 'Ce code a expiré. Demande à ton conjoint(e) de générer un nouveau code.',
 
     // Questions
     'questions.titre': 'Discutons',
@@ -283,6 +288,7 @@ export const translations = {
     'profil.regenerer_succes': 'Nouveau code généré.',
     'profil.rejoindre_duo': 'Rejoindre un duo',
     'profil.rejoindre_duo_desc': 'Entre le code de ton conjoint(e) pour vous connecter',
+    'profil.code_expire_avertissement': 'Code expiré — régénère un nouveau code pour ton conjoint(e).',
     'profil.rejoindre_btn': 'Rejoindre',
     'profil.supprimer_compte': 'Supprimer mon compte',
     'profil.supprimer_titre': 'Supprimer le compte',
@@ -632,6 +638,11 @@ export const translations = {
     'duo.compte_requis_titre': 'Account required',
     'duo.compte_requis_msg': 'You need an account to join this duo. Your code will be applied automatically after signing up.',
     'duo.creer_compte_btn': 'Create my account',
+    'duo.expire_le': 'Expires on {date}',
+    'duo.code_complet_titre': 'Duo already complete',
+    'duo.code_complet_desc': 'This duo is already complete. Ask your spouse to generate a new code.',
+    'duo.code_expire_titre': 'Code expired',
+    'duo.code_expire_desc': 'This code has expired. Ask your spouse to generate a new code.',
 
     // Questions
     'questions.titre': 'Discuss',
@@ -722,6 +733,7 @@ export const translations = {
     'profil.regenerer_succes': 'New code generated.',
     'profil.rejoindre_duo': 'Join a duo',
     'profil.rejoindre_duo_desc': "Enter your spouse's code to connect",
+    'profil.code_expire_avertissement': "Code expired — regenerate a new code for your spouse.",
     'profil.rejoindre_btn': 'Join',
     'profil.supprimer_compte': 'Delete my account',
     'profil.supprimer_titre': 'Delete account',
