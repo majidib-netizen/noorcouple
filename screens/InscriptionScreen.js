@@ -23,6 +23,7 @@ export default function InscriptionScreen({ navigation, route, onDone }) {
   const [genre, setGenre] = useState('');
   const [consentRgpd, setConsentRgpd] = useState(false);
   const [consentCgu, setConsentCgu] = useState(false);
+  const [trancheAge, setTrancheAge] = useState(null);
   const [loading, setLoading] = useState(false);
   const [showMdp, setShowMdp] = useState(false);
 
@@ -160,6 +161,7 @@ export default function InscriptionScreen({ navigation, route, onDone }) {
           consent_cgu: true,
           consent_cgu_date: new Date().toISOString(),
           created_at: new Date().toISOString(),
+          ...(trancheAge ? { tranche_age: trancheAge } : {}),
         })
         .select();
 
@@ -353,6 +355,22 @@ export default function InscriptionScreen({ navigation, route, onDone }) {
             </Text>
           </View>
 
+          {/* Tranche d'âge (facultatif) */}
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>{t('auth.label_tranche_age')}</Text>
+            <View style={styles.trancheRow}>
+              {['18-24', '25-34', '35-44', '45-54', '55+'].map((tranche) => (
+                <TouchableOpacity
+                  key={tranche}
+                  style={[styles.trancheChip, trancheAge === tranche && styles.trancheChipActif]}
+                  onPress={() => setTrancheAge(trancheAge === tranche ? null : tranche)}
+                >
+                  <Text style={[styles.trancheTxt, trancheAge === tranche && styles.trancheTxtActif]}>{tranche}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+
           <TouchableOpacity style={[styles.btn, loading && { opacity: 0.6 }]} onPress={valider} disabled={loading}>
             {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.btnText}>{t('auth.btn_creer')}</Text>}
           </TouchableOpacity>
@@ -384,6 +402,11 @@ const styles = StyleSheet.create({
   genreActif: { borderColor: COLORS.primary, backgroundColor: COLORS.primary },
   genreTxt: { fontSize: 15, fontWeight: '600', color: COLORS.text },
   genreTxtActif: { color: '#fff' },
+  trancheRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
+  trancheChip: { borderRadius: RADIUS.full, paddingVertical: 10, paddingHorizontal: 16, borderWidth: 2, borderColor: COLORS.border, backgroundColor: COLORS.white },
+  trancheChipActif: { borderColor: COLORS.primary, backgroundColor: COLORS.primary },
+  trancheTxt: { fontSize: 14, fontWeight: '600', color: COLORS.text },
+  trancheTxtActif: { color: '#fff' },
   checkRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 12, marginBottom: 14 },
   checkbox: { width: 22, height: 22, borderRadius: 6, borderWidth: 2, borderColor: COLORS.border, backgroundColor: COLORS.white, alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 1 },
   checkboxActif: { backgroundColor: COLORS.primary, borderColor: COLORS.primary },

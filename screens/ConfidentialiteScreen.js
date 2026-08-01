@@ -17,6 +17,7 @@ Adresse : [TON ADRESSE]`,
 • Ton prénom
 • Ton adresse email
 • Ton genre (homme/femme)
+• Ta tranche d'âge (facultative)
 • La date et l'heure de création du compte
 • Tes préférences de notifications
 • Le statut de ton achat (payé/non payé)
