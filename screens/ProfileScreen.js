@@ -447,7 +447,7 @@ export default function ProfileScreen() {
                 onPress={() => {
                   Alert.alert(
                     t('profil.regenerer_titre') || 'Régénérer un nouveau code ?',
-                    t('profil.regenerer_desc') || "L'ancien code ne sera plus valide. Si ton conjoint(e) était déjà lié(e), tu devras lui partager le nouveau code.",
+                    t('profil.regenerer_desc') || "L'ancien code ne sera plus valide. Si ton conjoint(e) est déjà lié(e), il/elle reste automatiquement dans le duo — pas besoin de lui partager le nouveau code.",
                     [
                       { text: t('generic.annuler') || 'Annuler', style: 'cancel' },
                       {

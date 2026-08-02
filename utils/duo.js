@@ -77,6 +77,45 @@ const sauvegarderCodeDuoSupabase = async (code) => {
 
 export { sauvegarderCodeDuoSupabase };
 
+// Fallback silencieux : si le code stocké localement ne correspond plus à
+// aucune ligne (ex: régénération du code par l'initiateur — Option B1, la
+// ligne reste la même mais sa valeur `code` change), retrouve le duo actif
+// de l'utilisateur par email et resynchronise l'AsyncStorage concerné.
+const resyncCodeParEmail = async (userEmail) => {
+  try {
+    const { data: viaConjoint } = await supabase
+      .from('duos')
+      .select('code')
+      .eq('conjoint', userEmail)
+      .eq('statut', 'actif')
+      .order('joined_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (viaConjoint?.code) {
+      console.log('[DUO_RESYNC] duo_code_conjoint périmé, resynchronisé via email →', viaConjoint.code);
+      await AsyncStorage.setItem('duo_code_conjoint', viaConjoint.code);
+      return { code: viaConjoint.code, estInitiateur: false };
+    }
+
+    const { data: viaInitiateur } = await supabase
+      .from('duos')
+      .select('code')
+      .eq('initiateur', userEmail)
+      .eq('statut', 'actif')
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (viaInitiateur?.code) {
+      console.log('[DUO_RESYNC] duo_code périmé, resynchronisé via email →', viaInitiateur.code);
+      await AsyncStorage.setItem('duo_code', viaInitiateur.code);
+      return { code: viaInitiateur.code, estInitiateur: true };
+    }
+  } catch (e) {
+    console.log('[DUO_RESYNC] Échec fallback par email:', e.message);
+  }
+  return null;
+};
+
 const determinerRole = async () => {
   console.log('=== determinerRole DEBUT ===');
   const monCode = await AsyncStorage.getItem('duo_code');
@@ -86,7 +125,31 @@ const determinerRole = async () => {
 
   // Priorité 1 : a rejoint avec un code → il est conjoint
   if (codeConjoint) {
-    console.log('=> Role: CONJOINT (via codeConjoint)');
+    try {
+      const { data: existe } = await supabase
+        .from('duos')
+        .select('code')
+        .eq('code', codeConjoint)
+        .maybeSingle();
+
+      if (existe) {
+        console.log('=> Role: CONJOINT (via codeConjoint)');
+        return { code: codeConjoint, estInitiateur: false };
+      }
+
+      console.log('[DUO_RESYNC] codeConjoint introuvable, tentative de fallback par email');
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user?.email) {
+        const resync = await resyncCodeParEmail(user.email);
+        if (resync) {
+          console.log('=> Role:', resync.estInitiateur ? 'INITIATEUR' : 'CONJOINT', '(resynchronisé)');
+          return resync;
+        }
+      }
+    } catch (e) {
+      console.log('[DUO_RESYNC] Erreur vérification codeConjoint:', e.message);
+    }
+    console.log('=> Role: CONJOINT (code périmé, aucun fallback trouvé)');
     return { code: codeConjoint, estInitiateur: false };
   }
 
@@ -110,6 +173,13 @@ const determinerRole = async () => {
           if (data.conjoint === user.email) {
             console.log('=> Role: CONJOINT (via email match)');
             return { code: monCode, estInitiateur: false };
+          }
+        } else {
+          console.log('[DUO_RESYNC] duo_code introuvable, tentative de fallback par email');
+          const resync = await resyncCodeParEmail(user.email);
+          if (resync) {
+            console.log('=> Role:', resync.estInitiateur ? 'INITIATEUR' : 'CONJOINT', '(resynchronisé)');
+            return resync;
           }
         }
       }
@@ -281,13 +351,36 @@ export const verifierDuoActif = async () => {
       return false;
     }
 
-    const { data, error } = await supabase
+    let { data, error } = await supabase
       .from('duos')
       .select('initiateur, conjoint, statut')
       .eq('code', code)
-      .single();
+      .maybeSingle();
 
     console.log('=> Supabase data:', JSON.stringify(data), '| error:', error?.message);
+
+    // Filet de sécurité supplémentaire : le code renvoyé par determinerRole()
+    // peut lui-même être devenu périmé entre-temps (ex: régénération pendant
+    // que cet appel était en cours) → nouvelle tentative via fallback email.
+    if (!data) {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user?.email) {
+          const resync = await resyncCodeParEmail(user.email);
+          if (resync) {
+            const retry = await supabase
+              .from('duos')
+              .select('initiateur, conjoint, statut')
+              .eq('code', resync.code)
+              .maybeSingle();
+            data = retry.data;
+            console.log('[DUO_RESYNC] verifierDuoActif relancé avec code resynchronisé:', resync.code);
+          }
+        }
+      } catch (e) {
+        console.log('[DUO_RESYNC] Échec fallback dans verifierDuoActif:', e.message);
+      }
+    }
 
     const actif = !!(data && data.statut === 'actif' && data.initiateur && data.conjoint);
     console.log('=> résultat verifierDuoActif:', actif);
@@ -480,32 +573,51 @@ export const regenererCodeDuo = async () => {
     if (!user?.email) return { succes: false, message: 'Non connecté' };
 
     const ancienCode = await AsyncStorage.getItem('duo_code');
-    const ancienCodeConjoint = await AsyncStorage.getItem('duo_code_conjoint');
-
-    if (ancienCode) {
-      await supabase.from('duos').update({ statut: 'archive' }).eq('code', ancienCode);
-    }
-    if (ancienCodeConjoint && ancienCodeConjoint !== ancienCode) {
-      await AsyncStorage.removeItem('duo_code_conjoint');
+    if (!ancienCode) {
+      return { succes: false, message: 'Aucun code à régénérer.' };
     }
 
-    await AsyncStorage.multiRemove([
-      'duo_code',
-      'duo_code_conjoint',
-      'duo_confirmation_affichee',
-      'reponses_conjoint_cache',
-      'jours_reveles',
-      'niveau_commun_cache',
-      'failles_communes_cache',
-      'duo_partenaire_paye',
-    ]);
-
-    const nouveauCode = await obtenirOuCreerCode();
-
-    // Ceinture + bretelles : garantit une expiration fraîche de 48h sur le
-    // nouveau code, indépendamment de ce que l'insert initial a posé.
+    // Régénère le code SUR LA LIGNE EXISTANTE : le conjoint (s'il est déjà
+    // lié), les diagnostics, réponses et le plan restent intacts — seul le
+    // code d'invitation change. Le WHERE initiateur=user.email garantit
+    // qu'on ne peut régénérer que sa propre ligne.
     const codeExpireAt = new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString();
-    await supabase.from('duos').update({ code_expire_at: codeExpireAt }).eq('code', nouveauCode);
+
+    let nouveauCode = null;
+    const MAX_TENTATIVES = 3;
+
+    for (let tentative = 0; tentative < MAX_TENTATIVES && !nouveauCode; tentative++) {
+      const candidat = await genererCodeDuo();
+
+      const { data: updated, error: updateError } = await supabase
+        .from('duos')
+        .update({
+          code: candidat,
+          code_expire_at: codeExpireAt,
+          tentatives_rejointe: 0,
+        })
+        .eq('code', ancienCode)
+        .eq('initiateur', user.email)
+        .select();
+
+      if (updateError) {
+        // Conflit d'unicité sur le nouveau code (très improbable) → retry
+        if (updateError.code === '23505') continue;
+        return { succes: false, message: updateError.message };
+      }
+
+      if (!updated || updated.length === 0) {
+        return { succes: false, message: "Duo introuvable ou tu n'en es pas l'initiateur." };
+      }
+
+      nouveauCode = candidat;
+    }
+
+    if (!nouveauCode) {
+      return { succes: false, message: 'Impossible de générer un code unique, réessaie.' };
+    }
+
+    await AsyncStorage.setItem('duo_code', nouveauCode);
 
     return { succes: true, code: nouveauCode };
   } catch (e) {
