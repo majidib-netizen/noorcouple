@@ -60,7 +60,6 @@ export default function QuestionsScreen({ navigation }) {
   const { t, langue } = useLanguage();
   const insets = useSafeAreaInsets();
   const [acces, setAcces] = useState(null);
-  const [joursRestants, setJoursRestants] = useState(null);
   const [loadingAcces, setLoadingAcces] = useState(true);
 
   useFocusEffect(
@@ -69,15 +68,8 @@ export default function QuestionsScreen({ navigation }) {
       const verifier = async () => {
         setLoadingAcces(true);
         const ok = await accesPremium();
-        const dateDebut = await AsyncStorage.getItem('essai_debut');
-        let jours = null;
-        if (dateDebut) {
-          const joursEcoules = Math.floor((Date.now() - new Date(dateDebut)) / 86400000);
-          jours = Math.max(0, 5 - joursEcoules);
-        }
         if (!actif) return;
         setAcces(ok);
-        setJoursRestants(jours);
         setLoadingAcces(false);
         if (!ok) navigation.navigate('Paywall', { contexte: 'questions' });
       };
@@ -721,13 +713,6 @@ export default function QuestionsScreen({ navigation }) {
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
-          {/* Trial banner */}
-          {acces && joursRestants !== null && joursRestants > 0 && (
-            <View style={s.trialBanner}>
-              <Text style={s.trialBannerTxt}>{t('paywall.essai_restant')}{joursRestants}</Text>
-            </View>
-          )}
-
           {/* Header */}
           <View style={s.header}>
             <Text style={s.titre}>{t('questions.titre')}</Text>
@@ -1022,8 +1007,6 @@ const s = StyleSheet.create({
 
   loadingWrap: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   loadingTxt: { fontSize: SIZES.xl, color: COLORS.textLight },
-  trialBanner: { backgroundColor: COLORS.accentLight, borderLeftWidth: 4, borderLeftColor: COLORS.accent, borderRadius: RADIUS.sm, padding: 12, marginBottom: 12 },
-  trialBannerTxt: { fontSize: 13, color: COLORS.accent, fontWeight: '600' },
 
   // Confirmation
   confirmWrap: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 32 },

@@ -47,7 +47,6 @@ export default function MonPlanScreen({ navigation }) {
   const { t, langue } = useLanguage();
   const insets = useSafeAreaInsets();
   const [acces, setAcces] = useState(null);
-  const [joursRestants, setJoursRestants] = useState(null);
   const [loadingAcces, setLoadingAcces] = useState(true);
 
   useFocusEffect(
@@ -56,15 +55,8 @@ export default function MonPlanScreen({ navigation }) {
       const verifier = async () => {
         setLoadingAcces(true);
         const ok = await accesPremium();
-        const dateDebut = await AsyncStorage.getItem('essai_debut');
-        let jours = null;
-        if (dateDebut) {
-          const joursEcoules = Math.floor((Date.now() - new Date(dateDebut)) / 86400000);
-          jours = Math.max(0, 5 - joursEcoules);
-        }
         if (!actif) return;
         setAcces(ok);
-        setJoursRestants(jours);
         setLoadingAcces(false);
         if (!ok) navigation.navigate('Paywall', { contexte: 'plan' });
       };
@@ -493,15 +485,6 @@ export default function MonPlanScreen({ navigation }) {
   return (
     <SafeAreaView style={s.container}>
       <View style={{ flex: 1 }}>
-        {/* Bannière essai gratuit */}
-        {acces && joursRestants !== null && joursRestants > 0 && (
-          <View style={s.trialBanner}>
-            <Text style={s.trialBannerTxt}>
-              {t('paywall.essai_restant')}{joursRestants}
-            </Text>
-          </View>
-        )}
-
         {/* ════════════ ACCUEIL ════════════ */}
         {etape === ETAPES.ACCUEIL && (
           <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: insets.bottom + 80 }}>
@@ -836,9 +819,6 @@ export default function MonPlanScreen({ navigation }) {
 
 const s = StyleSheet.create({
   container: { flex: 1, backgroundColor: COLORS.background },
-
-  trialBanner: { backgroundColor: COLORS.accentLight, borderLeftWidth: 3, borderLeftColor: COLORS.accent, paddingVertical: 6, paddingHorizontal: 16 },
-  trialBannerTxt: { fontSize: 11, color: COLORS.accent, fontWeight: '700' },
 
   // Accueil
   heroWrap: { padding: 28, alignItems: 'center' },

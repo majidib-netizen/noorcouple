@@ -113,6 +113,11 @@ export default function App() {
 
         initRevenueCat();
 
+        // Nettoyage rétrocompat : l'essai local est remplacé par l'essai
+        // géré par Apple/Google (RevenueCat) — supprime silencieusement
+        // toute trace de l'ancien système chez les utilisateurs existants.
+        AsyncStorage.removeItem('essai_debut').catch(() => {});
+
         if (session?.user) {
           // Session active — connecte directement
           await AsyncStorage.setItem('onboarded', 'true');

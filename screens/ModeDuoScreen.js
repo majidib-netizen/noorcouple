@@ -39,7 +39,7 @@ const ETAPES = {
 
 export default function ModeDuoScreen({ navigation }) {
   const { t, langue } = useLanguage();
-  const { acces, joursRestants, loading: loadingAcces } = useAccesPremium();
+  const { acces, loading: loadingAcces } = useAccesPremium();
   useFocusEffect(
     React.useCallback(() => {
       if (!loadingAcces && !acces) {

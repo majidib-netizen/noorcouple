@@ -6,10 +6,8 @@ import {
 import { supabase } from '../config/supabase';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { COLORS, SIZES, RADIUS, SHADOW } from '../constants/theme';
-import { demarrerEssai } from '../utils/access';
 import { rejoindreAvecCode, sauvegarderCodeDuoSupabase, sauvegarderDiagnosticDuo } from '../utils/duo';
 import { detecterFailles } from '../constants/planData';
-import { appGoMain } from '../utils/appState';
 import { useLanguage } from '../context/LanguageContext';
 
 export default function InscriptionScreen({ navigation, route, onDone }) {
@@ -179,11 +177,10 @@ export default function InscriptionScreen({ navigation, route, onDone }) {
         await sauvegarderCodeDuoSupabase(codeDuoPending);
       }
 
-      // 4. Sauvegarder les données locales et démarrer l'essai
+      // 4. Sauvegarder les données locales
       await AsyncStorage.setItem('genre', genre);
       await AsyncStorage.setItem('user_email', email.trim().toLowerCase());
       await AsyncStorage.setItem('prenom', prenom.trim());
-      await demarrerEssai();
 
       const { error: signInError } = await supabase.auth.signInWithPassword({
         email: email.trim().toLowerCase(),
@@ -240,11 +237,16 @@ export default function InscriptionScreen({ navigation, route, onDone }) {
 
       await AsyncStorage.setItem('onboarded', 'true');
       if (typeof onDone === 'function') {
+        // Cas onboarding : InscriptionScreen est rendu en JSX par OnboardingScreen
+        // (pas via ce Stack Navigator), Paywall n'y est pas enregistré comme écran.
+        // L'utilisateur atterrit sur HomeScreen (libre d'accès) puis se fait
+        // rediriger vers Paywall automatiquement par le garde-fou de l'onglet
+        // premium qu'il tente d'ouvrir (Mon Plan / Discutons / etc.).
         onDone();
-      } else if (isMainStack) {
-        navigation.reset({ index: 0, routes: [{ name: 'Main' }] });
       } else {
-        appGoMain?.onGoMain?.();
+        // Comptes créés depuis l'app principale (Profil, Paywall, Connexion) :
+        // redirection directe vers Paywall, sans repasser par l'écran d'inscription.
+        navigation.reset({ index: 0, routes: [{ name: 'Paywall', params: { contexte: 'plan' } }] });
       }
     } catch (e) {
       Alert.alert(t('generic.erreur'), t('auth.erreur_impossible'));

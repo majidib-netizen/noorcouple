@@ -6,7 +6,6 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { COLORS, SIZES, RADIUS, SHADOW } from '../constants/theme';
 import { CONSEILS, HADITHS, DEFIS } from '../constants/data';
 import { useLanguage } from '../context/LanguageContext';
-import { joursEssaiRestants } from '../utils/access';
 import { verifierDuoActif } from '../utils/duo';
 
 const ProgressCard = ({ emoji, titre, sousTitre, pourcentage, badge, badgeColor, onPress, actionFaite, t }) => (
@@ -115,7 +114,6 @@ export default function HomeScreen({ navigation }) {
   const [prenom, setPrenom] = useState('');
   const [conseils, setConseils] = useState([]);
   const [hadith, setHadith] = useState(null);
-  const [joursRestants, setJoursRestants] = useState(null);
   const [planProgression, setPlanProgression] = useState(null);
   const [questionsProgression, setQuestionsProgression] = useState(null);
 
@@ -129,11 +127,8 @@ export default function HomeScreen({ navigation }) {
   const chargerDonnees = async () => {
     const g = await AsyncStorage.getItem('genre') || 'homme';
     const p = await AsyncStorage.getItem('prenom') || '';
-    const jours = await joursEssaiRestants();
-    const essaiDebut = await AsyncStorage.getItem('essai_debut');
     setGenre(g);
     setPrenom(p);
-    if (essaiDebut) setJoursRestants(jours);
 
     const dayOfMonth = new Date().getDate();
     const list = CONSEILS[g] || CONSEILS.homme;
@@ -193,22 +188,6 @@ export default function HomeScreen({ navigation }) {
           <Text style={styles.greeting}>{getGreeting()}</Text>
           <Text style={styles.name}>{prenom || defaultName}</Text>
         </View>
-
-        {/* Trial banner */}
-        {joursRestants !== null && joursRestants <= 3 && (
-          <TouchableOpacity
-            style={styles.trialBanner}
-            onPress={() => navigation.navigate('Paywall', { contexte: 'plan' })}
-            activeOpacity={0.85}
-          >
-            <Text style={styles.trialBannerTxt}>
-              {joursRestants === 0
-                ? t('paywall.essai_fin')
-                : `${t('paywall.essai_restant')}${joursRestants}`}
-            </Text>
-            <Text style={styles.trialBannerLink}>{t('paywall.en_savoir_plus')} →</Text>
-          </TouchableOpacity>
-        )}
 
         {/* Ma progression */}
         {(planProgression || questionsProgression) && (
@@ -385,9 +364,6 @@ const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: COLORS.background },
   scroll: { flex: 1, paddingHorizontal: 20 },
   header: { paddingTop: 24, paddingBottom: 20 },
-  trialBanner: { backgroundColor: COLORS.accentLight, borderLeftWidth: 4, borderLeftColor: COLORS.accent, borderRadius: RADIUS.sm, padding: 12, marginBottom: 16 },
-  trialBannerTxt: { fontSize: 13, color: COLORS.accent, fontWeight: '600' },
-  trialBannerLink: { fontSize: 12, color: COLORS.accent, marginTop: 4 },
   greeting: { fontSize: SIZES.sm, color: COLORS.textSecondary },
   name: { fontSize: SIZES.xl, fontWeight: '700', color: COLORS.text, marginTop: 2 },
 
