@@ -10,7 +10,6 @@ import { DIAGNOSTIC_QUESTIONS, calculerNiveau, detecterFailles } from '../consta
 import { obtenirOuCreerCode, verifierDuoActif, sauvegarderDiagnosticDuo } from '../utils/duo';
 import { supabase } from '../config/supabase';
 import InscriptionScreen from './InscriptionScreen';
-import PaywallScreen from './PaywallScreen';
 
 const ETAPE = {
   BIENVENUE: 'bienvenue',
@@ -20,7 +19,6 @@ const ETAPE = {
   INVITE_CODE: 'invite_code',
   REJOINDRE_CODE: 'rejoindre_code',
   DIAGNOSTIC: 'diagnostic',
-  PAIEMENT: 'paiement',
   INSCRIPTION: 'inscription',
 };
 
@@ -31,7 +29,6 @@ const STEP_NUMBER = {
   [ETAPE.INVITE_CODE]: 3,
   [ETAPE.REJOINDRE_CODE]: 3,
   [ETAPE.DIAGNOSTIC]: 4,
-  [ETAPE.PAIEMENT]: 5,
 };
 
 export default function OnboardingScreen({ navigation, onDone }) {
@@ -102,8 +99,7 @@ export default function OnboardingScreen({ navigation, onDone }) {
       [ETAPE.INVITE_CODE]: intention === 'periode_delicate' ? ETAPE.MODE_PLAN : ETAPE.DUO_QUESTIONS,
       [ETAPE.REJOINDRE_CODE]: intention === 'periode_delicate' ? ETAPE.MODE_PLAN : ETAPE.DUO_QUESTIONS,
       [ETAPE.DIAGNOSTIC]: prevEtape || ETAPE.INTENTION,
-      [ETAPE.PAIEMENT]: ETAPE.DIAGNOSTIC,
-      [ETAPE.INSCRIPTION]: ETAPE.PAIEMENT,
+      [ETAPE.INSCRIPTION]: ETAPE.DIAGNOSTIC,
     };
     setEtape(backs[etape] || ETAPE.INTENTION);
   };
@@ -128,7 +124,7 @@ export default function OnboardingScreen({ navigation, onDone }) {
     if (!stepNumber) return <View style={s.topBarSpacer} />;
     return (
       <View style={s.progressWrap}>
-        {[1, 2, 3, 4, 5].map(n => (
+        {[1, 2, 3, 4].map(n => (
           <View key={n} style={[s.progressSegment, n <= stepNumber && s.progressActive]} />
         ))}
       </View>
@@ -467,8 +463,7 @@ export default function OnboardingScreen({ navigation, onDone }) {
           await sauvegarderDiagnosticDuo(niv, f, nouvellesReponses).catch(e =>
             console.log('Diag duo save error:', e)
           );
-          const codePending = await AsyncStorage.getItem('duo_code_conjoint_pending');
-          goTo(codePending ? ETAPE.INSCRIPTION : ETAPE.PAIEMENT);
+          goTo(ETAPE.INSCRIPTION);
         } catch (e) { console.log('Erreur diagnostic save:', e); }
       }
     };
@@ -508,20 +503,6 @@ export default function OnboardingScreen({ navigation, onDone }) {
           ))}
         </ScrollView>
       </SafeAreaView>
-    );
-  }
-
-  // ─── PAIEMENT ───────────────────────────────────────────────────────────────
-  if (etape === ETAPE.PAIEMENT) {
-    return (
-      <PaywallScreen
-        navigation={navigation}
-        route={{ params: {
-          contexte: intention === 'periode_delicate' ? 'plan' : 'questions',
-          onContinuer: () => goTo(ETAPE.INSCRIPTION),
-          onFermer: explorerGratuitement,
-        }}}
-      />
     );
   }
 
