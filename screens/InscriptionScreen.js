@@ -10,6 +10,18 @@ import { rejoindreAvecCode, sauvegarderCodeDuoSupabase, sauvegarderDiagnosticDuo
 import { detecterFailles } from '../constants/planData';
 import { useLanguage } from '../context/LanguageContext';
 
+const DOMAINES_JETABLES = [
+  'mailinator.com', 'yopmail.com', 'tempmail.com', '10minutemail.com',
+  'guerrillamail.com', 'throwawaymail.com', 'temp-mail.org', 'sharklasers.com',
+  'getnada.com', 'mailnesia.com', 'mytemp.email', 'mohmal.com', 'maildrop.cc',
+  'mintemail.com', 'tempinbox.com', 'trashmail.com', 'dispostable.com',
+  'spam4.me', 'emailondeck.com', 'tempmailaddress.com', 'mailcatch.com',
+  'fakeinbox.com', 'mailexpire.com', 'mail-temporaire.fr', 'jetable.org',
+  'moakt.com', 'mvrht.com', 'throwam.com', 'armyspy.com', 'cuvox.de',
+  'dayrep.com', 'einrot.com', 'fleckens.hu', 'gustr.com', 'jourrapide.com',
+  'rhyta.com', 'superrito.com', 'teleworm.us',
+];
+
 export default function InscriptionScreen({ navigation, route, onDone }) {
   const { t } = useLanguage();
   const redirect = route?.params?.redirect;
@@ -56,11 +68,19 @@ export default function InscriptionScreen({ navigation, route, onDone }) {
     }
 
     // 2. Format email valide
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
     if (!emailRegex.test(email.trim())) {
       return Alert.alert(
         t('auth.erreur_titre') || 'Email invalide',
-        t('auth.email_invalide') || "L'adresse email n'est pas valide. Vérifie que tu as bien tapé l'adresse complète (ex: prenom@example.com)."
+        t('auth.email_format_invalide') || "Format d'email invalide. Vérifie ta saisie."
+      );
+    }
+
+    const domaineEmail = email.trim().split('@')[1]?.toLowerCase();
+    if (domaineEmail && DOMAINES_JETABLES.includes(domaineEmail)) {
+      return Alert.alert(
+        t('auth.erreur_titre') || 'Email invalide',
+        t('auth.email_domaine_refuse') || "Cet email n'est pas accepté. Utilise ton email principal (pas d'email jetable)."
       );
     }
 
@@ -72,10 +92,24 @@ export default function InscriptionScreen({ navigation, route, onDone }) {
       );
     }
 
-    if (mdp.length < 6) {
+    if (mdp.length < 8) {
       return Alert.alert(
         t('auth.erreur_titre') || 'Mot de passe trop court',
-        t('auth.mdp_court') || 'Ton mot de passe doit contenir au moins 6 caractères.'
+        t('auth.mdp_trop_court') || 'Le mot de passe doit contenir au moins 8 caractères'
+      );
+    }
+
+    if (!/[a-zA-Z]/.test(mdp)) {
+      return Alert.alert(
+        t('auth.erreur_titre') || 'Mot de passe invalide',
+        t('auth.mdp_regle_lettre') || 'Le mot de passe doit contenir au moins 1 lettre'
+      );
+    }
+
+    if (!/[0-9]/.test(mdp)) {
+      return Alert.alert(
+        t('auth.erreur_titre') || 'Mot de passe invalide',
+        t('auth.mdp_regle_chiffre') || 'Le mot de passe doit contenir au moins 1 chiffre'
       );
     }
 
@@ -125,8 +159,8 @@ export default function InscriptionScreen({ navigation, route, onDone }) {
 
         if (authError.message.includes('already registered') || authError.message.includes('already exists')) {
           messageErreur = t('auth.email_existant') || 'Cette adresse email est déjà utilisée. Connecte-toi avec ton mot de passe ou utilise une autre adresse.';
-        } else if (authError.message.includes('Password')) {
-          messageErreur = t('auth.mdp_invalide') || 'Le mot de passe ne respecte pas les critères de sécurité.';
+        } else if (authError.message.toLowerCase().includes('password')) {
+          messageErreur = t('auth.mdp_invalide_detail') || 'Ton mot de passe doit contenir au moins 8 caractères, 1 lettre et 1 chiffre';
         } else if (authError.message.includes('Email')) {
           messageErreur = t('auth.email_format') || "L'adresse email semble invalide. Vérifie-la et réessaye.";
         } else if (authError.message.includes('network') || authError.message.includes('fetch')) {
@@ -321,6 +355,7 @@ export default function InscriptionScreen({ navigation, route, onDone }) {
                 <Text>{showMdp ? '🙈' : '👁️'}</Text>
               </TouchableOpacity>
             </View>
+            <Text style={styles.mdpRegle}>{t('auth.mdp_regle')}</Text>
           </View>
 
           <View style={styles.inputGroup}>
@@ -399,6 +434,7 @@ const styles = StyleSheet.create({
   label: { fontSize: 13, fontWeight: '600', color: COLORS.text, marginBottom: 6 },
   input: { backgroundColor: COLORS.white, borderRadius: RADIUS.md, padding: 14, fontSize: 15, color: COLORS.text, borderWidth: 1.5, borderColor: COLORS.border },
   mdpRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  mdpRegle: { fontSize: 12, color: COLORS.textSecondary, marginTop: 4 },
   genreRow: { flexDirection: 'row', gap: 12 },
   genreBtn: { flex: 1, borderRadius: RADIUS.md, padding: 14, alignItems: 'center', borderWidth: 2, borderColor: COLORS.border, backgroundColor: COLORS.white },
   genreActif: { borderColor: COLORS.primary, backgroundColor: COLORS.primary },
