@@ -8,6 +8,7 @@ import { appReset } from '../utils/appState';
 import { scheduleNotification, scheduleNotificationsPlan, annulerNotificationsQuestions, annulerNotificationsPlan } from '../utils/notifications';
 import { useLanguage } from '../context/LanguageContext';
 import { rejoindreAvecCode, regenererCodeDuo } from '../utils/duo';
+import { getAppStoreUrl } from '../utils/urls';
 import { supabase } from '../config/supabase';
 
 const formatExpiration = (iso, langue) => {
@@ -436,7 +437,7 @@ export default function ProfileScreen() {
               )}
               <TouchableOpacity
                 onPress={() => Share.share({
-                  message: `Rejoins-moi sur NoorCouple 🤍\n\nCode : ${monCode}\n\nTélécharge l'app : https://play.google.com/store/apps/details?id=com.casquedev.noorcouple`
+                  message: `Rejoins-moi sur NoorCouple 🤍\n\nCode : ${monCode}\n\nTélécharge l'app : ${getAppStoreUrl()}`
                 })}
                 style={styles.shareCodeBtn}
               >

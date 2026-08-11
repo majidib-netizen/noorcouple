@@ -15,6 +15,7 @@ import { scheduleNotificationsPlan } from '../utils/notifications';
 import { useLanguage } from '../context/LanguageContext';
 import { aUnCompte, useAccesPremium } from '../utils/access';
 import { obtenirOuCreerCode, verifierDuoActif, rejoindreAvecCode } from '../utils/duo';
+import { getAppStoreUrl } from '../utils/urls';
 
 const formatHeure = (h) => { const [hh, mm] = h.split(':'); return `${hh}h${mm === '00' ? '' : mm}`; };
 
@@ -168,7 +169,7 @@ export default function ModeDuoScreen({ navigation }) {
   const partagerCode = async () => {
     try {
       await Share.share({
-        message: `Rejoins-moi sur NoorCouple pour notre plan de couple 🤍\n\nMon code d'invitation : ${monCode}\n\n📱 Télécharge l'app gratuitement :\nhttps://play.google.com/store/apps/details?id=com.casquedev.noorcouple\n\nUne fois installée, entre mon code dans l'onglet "Duo".`,
+        message: `Rejoins-moi sur NoorCouple pour notre plan de couple 🤍\n\nMon code d'invitation : ${monCode}\n\n📱 Télécharge l'app gratuitement :\n${getAppStoreUrl()}\n\nUne fois installée, entre mon code dans l'onglet "Duo".`,
         title: 'Invitation NoorCouple — Mode Duo',
       });
     } catch (e) { console.log(e); }
@@ -524,7 +525,7 @@ export default function ModeDuoScreen({ navigation }) {
               <TouchableOpacity
                 style={s.btnSecondaire}
                 onPress={() => Share.share({
-                  message: t('duo.partage_message').replace('{code}', monCode),
+                  message: t('duo.partage_message').replace('{code}', monCode).replace('{url}', getAppStoreUrl()),
                 })}
               >
                 <Text style={s.btnSecondaireTxt}>{t('duo.renvoyer_code')}</Text>

@@ -15,6 +15,7 @@ import { scheduleNotification } from '../utils/notifications';
 import { useLanguage } from '../context/LanguageContext';
 import { accesPremium } from '../utils/access';
 import { obtenirOuCreerCode, verifierDuoActif, verifierDoubleReponse, sauvegarderReponseDuo, getReponsesConjoint, determinerRoleExport, dechiffrer } from '../utils/duo';
+import { getAppStoreUrl } from '../utils/urls';
 import { supabase } from '../config/supabase';
 
 // ─── Thème badges ─────────────────────────────────────────────────────────────
@@ -447,7 +448,7 @@ export default function QuestionsScreen({ navigation }) {
   const partagerCode = async () => {
     try {
       await Share.share({
-        message: `Rejoins-moi sur NoorCouple pour nos questions du jour en couple 🤍\n\nCode : ${duoCode}\n\nTélécharge l'app : https://play.google.com/store/apps/details?id=com.casquedev.noorcouple`,
+        message: `Rejoins-moi sur NoorCouple pour nos questions du jour en couple 🤍\n\nCode : ${duoCode}\n\nTélécharge l'app : ${getAppStoreUrl()}`,
       });
     } catch (e) { console.log('Share error:', e); }
   };
@@ -746,7 +747,7 @@ export default function QuestionsScreen({ navigation }) {
                 <TouchableOpacity
                   style={s.btnSecondaire}
                   onPress={() => Share.share({
-                    message: t('duo.partage_message').replace('{code}', duoCode),
+                    message: t('duo.partage_message').replace('{code}', duoCode).replace('{url}', getAppStoreUrl()),
                   })}
                 >
                   <Text style={s.btnSecondaireTxt}>{t('duo.renvoyer_code')}</Text>

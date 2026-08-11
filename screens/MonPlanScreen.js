@@ -19,6 +19,7 @@ import { scheduleNotificationsPlan, reactiverNotificationsGeneriques } from '../
 import { useLanguage } from '../context/LanguageContext';
 import { accesPremium } from '../utils/access';
 import { sauvegarderDiagnosticDuo, recupererNiveauDuo } from '../utils/duo';
+import { getAppStoreUrl } from '../utils/urls';
 
 const ETAPES = {
   ACCUEIL: 'accueil',
@@ -237,7 +238,7 @@ export default function MonPlanScreen({ navigation }) {
   const partagerCodePlan = async () => {
     try {
       await Share.share({
-        message: `Rejoins-moi pour notre plan conjugal de 40 jours 🤍\n\nCode : ${planDuoCode}\n\nTélécharge l'app : https://play.google.com/store/apps/details?id=com.casquedev.noorcouple`,
+        message: `Rejoins-moi pour notre plan conjugal de 40 jours 🤍\n\nCode : ${planDuoCode}\n\nTélécharge l'app : ${getAppStoreUrl()}`,
       });
     } catch (e) { console.log('Share error:', e); }
   };
