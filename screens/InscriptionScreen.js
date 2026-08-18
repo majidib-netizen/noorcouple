@@ -26,6 +26,7 @@ export default function InscriptionScreen({ navigation, route, onDone }) {
   const { t } = useLanguage();
   const redirect = route?.params?.redirect;
   const isMainStack = route?.params?.isMainStack;
+  const contexte = route?.params?.contexte || 'plan';
   const [prenom, setPrenom] = useState('');
   const [email, setEmail] = useState('');
   const [mdp, setMdp] = useState('');
@@ -280,7 +281,7 @@ export default function InscriptionScreen({ navigation, route, onDone }) {
       } else {
         // Comptes créés depuis l'app principale (Profil, Paywall, Connexion) :
         // redirection directe vers Paywall, sans repasser par l'écran d'inscription.
-        navigation.reset({ index: 0, routes: [{ name: 'Paywall', params: { contexte: 'plan' } }] });
+        navigation.reset({ index: 0, routes: [{ name: 'Paywall', params: { contexte } }] });
       }
     } catch (e) {
       Alert.alert(t('generic.erreur'), t('auth.erreur_impossible'));

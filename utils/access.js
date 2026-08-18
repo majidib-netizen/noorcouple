@@ -94,16 +94,19 @@ export const enregistrerPaiement = async (userEmail, expireAtISO, plan) => {
 
 export const useAccesPremium = () => {
   const [acces, setAcces] = useState(null);
+  const [compte, setCompte] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const verifier = async () => {
+      const compteOk = await aUnCompte();
       const ok = await accesPremium();
+      setCompte(compteOk);
       setAcces(ok);
       setLoading(false);
     };
     verifier();
   }, []);
 
-  return { acces, loading };
+  return { acces, compte, loading };
 };

@@ -13,7 +13,7 @@ import { QUESTIONS, getQuestionByJour, buildQuestionsOrder } from '../constants/
 import { DIAGNOSTIC_QUESTIONS, detecterFailles } from '../constants/planData';
 import { scheduleNotification } from '../utils/notifications';
 import { useLanguage } from '../context/LanguageContext';
-import { accesPremium } from '../utils/access';
+import { accesPremium, aUnCompte } from '../utils/access';
 import { obtenirOuCreerCode, verifierDuoActif, verifierDoubleReponse, sauvegarderReponseDuo, getReponsesConjoint, determinerRoleExport, dechiffrer } from '../utils/duo';
 import { getAppStoreUrl } from '../utils/urls';
 import { supabase } from '../config/supabase';
@@ -68,6 +68,13 @@ export default function QuestionsScreen({ navigation }) {
       let actif = true;
       const verifier = async () => {
         setLoadingAcces(true);
+        const compte = await aUnCompte();
+        if (!actif) return;
+        if (!compte) {
+          setLoadingAcces(false);
+          navigation.navigate('Inscription', { contexte: 'questions', isMainStack: true });
+          return;
+        }
         const ok = await accesPremium();
         if (!actif) return;
         setAcces(ok);

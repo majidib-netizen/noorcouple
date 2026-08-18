@@ -17,7 +17,7 @@ import { NOTIF_PLAN } from '../constants/notifMessages';
 import { BONUS_MESSAGES } from '../constants/bonusMessages';
 import { scheduleNotificationsPlan, reactiverNotificationsGeneriques } from '../utils/notifications';
 import { useLanguage } from '../context/LanguageContext';
-import { accesPremium } from '../utils/access';
+import { accesPremium, aUnCompte } from '../utils/access';
 import { sauvegarderDiagnosticDuo, recupererNiveauDuo } from '../utils/duo';
 import { getAppStoreUrl } from '../utils/urls';
 
@@ -55,6 +55,13 @@ export default function MonPlanScreen({ navigation }) {
       let actif = true;
       const verifier = async () => {
         setLoadingAcces(true);
+        const compte = await aUnCompte();
+        if (!actif) return;
+        if (!compte) {
+          setLoadingAcces(false);
+          navigation.navigate('Inscription', { contexte: 'plan', isMainStack: true });
+          return;
+        }
         const ok = await accesPremium();
         if (!actif) return;
         setAcces(ok);

@@ -6,7 +6,7 @@ import BottomNavBar from '../components/BottomNavBar';
 import { COLORS, SIZES, RADIUS, SHADOW } from '../constants/theme';
 import { DEFIS } from '../constants/data';
 import { useLanguage } from '../context/LanguageContext';
-import { accesPremium } from '../utils/access';
+import { accesPremium, aUnCompte } from '../utils/access';
 
 const DIFF_COLORS = { Facile: '#1B3A5C', Moyen: '#C9A96E', Difficile: '#A05A7A' };
 
@@ -17,6 +17,7 @@ export default function DefisScreen({ navigation }) {
   const [progression, setProgression] = useState({});
   const [jourActuel, setJourActuel] = useState(0);
   const [hasPremium, setHasPremium] = useState(false);
+  const [hasCompte, setHasCompte] = useState(false);
   const [loadingAcces, setLoadingAcces] = useState(true);
 
   useEffect(() => {
@@ -24,22 +25,32 @@ export default function DefisScreen({ navigation }) {
   }, []);
 
   const loadData = async () => {
-    const [d, p, j, premium] = await Promise.all([
+    const [d, p, j, compte, premium] = await Promise.all([
       AsyncStorage.getItem('defi_actif'),
       AsyncStorage.getItem('defi_progression').then(v => JSON.parse(v || '{}')),
       AsyncStorage.getItem('defi_jour').then(v => parseInt(v || '0')),
+      aUnCompte(),
       accesPremium(),
     ]);
     if (d) setDefiActif(d);
     setProgression(p);
     setJourActuel(j);
+    setHasCompte(compte);
     setHasPremium(premium);
     setLoadingAcces(false);
   };
 
+  const allerVersAccesRequis = () => {
+    if (!hasCompte) {
+      navigation.navigate('Inscription', { contexte: 'defis', isMainStack: true });
+    } else {
+      navigation.navigate('Paywall', { contexte: 'defis' });
+    }
+  };
+
   const demarrerDefi = async (defi, index) => {
     if (index > 0 && !hasPremium) {
-      navigation.navigate('Paywall', { contexte: 'defis' });
+      allerVersAccesRequis();
       return;
     }
     await AsyncStorage.setItem('defi_actif', defi.id);
@@ -149,7 +160,7 @@ export default function DefisScreen({ navigation }) {
           <TouchableOpacity
             key={defi.id}
             activeOpacity={isLocked ? 0.7 : 1}
-            onPress={isLocked ? () => navigation.navigate('Paywall', { contexte: 'defis' }) : undefined}
+            onPress={isLocked ? allerVersAccesRequis : undefined}
           >
           <View style={[styles.card, isLocked && styles.cardLocked]}>
             {isLocked && (

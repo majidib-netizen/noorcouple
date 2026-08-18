@@ -40,13 +40,18 @@ const ETAPES = {
 
 export default function ModeDuoScreen({ navigation }) {
   const { t, langue } = useLanguage();
-  const { acces, loading: loadingAcces } = useAccesPremium();
+  const { acces, compte: aCompte, loading: loadingAcces } = useAccesPremium();
   useFocusEffect(
     React.useCallback(() => {
-      if (!loadingAcces && !acces) {
+      if (loadingAcces) return;
+      if (!aCompte) {
+        navigation.navigate('Inscription', { contexte: 'duo', isMainStack: true });
+        return;
+      }
+      if (!acces) {
         navigation.navigate('Paywall', { contexte: 'duo' });
       }
-    }, [acces, loadingAcces])
+    }, [acces, aCompte, loadingAcces])
   );
   const [etape, setEtape] = useState(ETAPES.ACCUEIL);
   const [monCode, setMonCode] = useState('');
@@ -148,7 +153,7 @@ export default function ModeDuoScreen({ navigation }) {
   // ─── GÉNÉRER UN CODE ─────────────────────────────────────────────────────────
   const genererCodeDuo = async () => {
     const compte = await aUnCompte();
-    if (!compte) { navigation.navigate('Paywall', { contexte: 'duo' }); return; }
+    if (!compte) { navigation.navigate('Inscription', { contexte: 'duo', isMainStack: true }); return; }
     setLoading(true);
     try {
       const code = await obtenirOuCreerCode();
@@ -178,7 +183,7 @@ export default function ModeDuoScreen({ navigation }) {
   // ─── REJOINDRE AVEC UN CODE ──────────────────────────────────────────────────
   const rejoindreDuo = async () => {
     const compte = await aUnCompte();
-    if (!compte) { navigation.navigate('Paywall', { contexte: 'duo' }); return; }
+    if (!compte) { navigation.navigate('Inscription', { contexte: 'duo', isMainStack: true }); return; }
     const codeVal = codeInput.trim().toUpperCase();
     if (!codeVal || codeVal.length < 6) {
       Alert.alert('Code invalide', 'Entre le code complet reçu de ton conjoint(e).');
