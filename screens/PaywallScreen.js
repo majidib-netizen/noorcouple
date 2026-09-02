@@ -8,7 +8,7 @@ import { COLORS, SIZES, RADIUS, SHADOW } from '../constants/theme';
 import { useLanguage } from '../context/LanguageContext';
 import { supabase } from '../config/supabase';
 import { aUnCompte, enregistrerPaiement } from '../utils/access';
-import { getOfferings, purchasePackage, getExpirationInfo } from '../utils/revenuecat';
+import { getOfferings, purchasePackage, getExpirationInfo, getDebugInfo, getAppUserID } from '../utils/revenuecat';
 
 const TITRE_KEYS = {
   plan:      'paywall.titre_plan',
@@ -38,12 +38,18 @@ export default function PaywallScreen({ navigation, route }) {
   const [loadingOfferings, setLoadingOfferings] = useState(true);
   const [purchasing, setPurchasing] = useState(false);
   const [abonnementChoisi, setAbonnementChoisi] = useState('annuel');
+  // DEBUG TEMPORAIRE - À SUPPRIMER
+  const [debugExtra, setDebugExtra] = useState({ appUserId: null, apiKeyPrefix: null });
 
   useEffect(() => {
     const charger = async () => {
       setLoadingOfferings(true);
       const off = await getOfferings();
       setOfferings(off);
+      // DEBUG TEMPORAIRE - À SUPPRIMER
+      const info = getDebugInfo();
+      const appUserId = await getAppUserID();
+      setDebugExtra({ appUserId, apiKeyPrefix: info.apiKeyPrefix });
       setLoadingOfferings(false);
     };
     charger();
@@ -51,6 +57,15 @@ export default function PaywallScreen({ navigation, route }) {
 
   const packageAnnuel = offerings?.current?.annual || null;
   const packageMensuel = offerings?.current?.monthly || null;
+
+  // DEBUG TEMPORAIRE - À SUPPRIMER : conditions d'affichage du bloc de diagnostic
+  const offeringsEnErreur = !!offerings?.__error;
+  const offeringsNull = offerings === null;
+  const currentNull = !offeringsEnErreur && (offerings?.current == null);
+  const packagesTrouves = offerings?.current?.availablePackages || [];
+  const afficherDebug = !loadingOfferings && (
+    offeringsEnErreur || offeringsNull || currentNull || (!packageAnnuel && !packageMensuel)
+  );
 
   const packageSelectionne = () => (
     abonnementChoisi === 'annuel' ? packageAnnuel : packageMensuel
@@ -201,6 +216,28 @@ export default function PaywallScreen({ navigation, route }) {
               <Text style={styles.optionPrix}>{prixMensuel}</Text>
               <Text style={styles.optionPeriode}>{t('paywall.par_mois')}</Text>
             </TouchableOpacity>
+          </View>
+        )}
+
+        {/* DEBUG TEMPORAIRE - À SUPPRIMER : diagnostic RevenueCat visible à l'écran */}
+        {afficherDebug && (
+          <View style={styles.debugBox}>
+            <Text style={styles.debugTitre} selectable>🐛 DEBUG RevenueCat (à supprimer)</Text>
+            <ScrollView style={styles.debugScroll} nestedScrollEnabled>
+              <Text style={styles.debugTxt} selectable>Platform.OS: {Platform.OS}</Text>
+              <Text style={styles.debugTxt} selectable>API key prefix: {debugExtra.apiKeyPrefix || 'null'}</Text>
+              <Text style={styles.debugTxt} selectable>offerings === null: {String(offeringsNull)}</Text>
+              <Text style={styles.debugTxt} selectable>offerings.current === null: {String(currentNull)}</Text>
+              <Text style={styles.debugTxt} selectable>Nb packages: {packagesTrouves.length}</Text>
+              <Text style={styles.debugTxt} selectable>
+                Packages: {packagesTrouves.length > 0 ? packagesTrouves.map(p => p.identifier).join(', ') : 'aucun'}
+              </Text>
+              <Text style={styles.debugTxt} selectable>Erreur: {offeringsEnErreur ? (offerings.message || 'inconnue') : 'aucune'}</Text>
+              <Text style={styles.debugTxt} selectable>
+                Code erreur: {offeringsEnErreur ? String(offerings.code ?? offerings.readableErrorCode ?? 'n/a') : 'n/a'}
+              </Text>
+              <Text style={styles.debugTxt} selectable>App User ID: {debugExtra.appUserId || 'null'}</Text>
+            </ScrollView>
           </View>
         )}
 
@@ -423,5 +460,30 @@ const styles = StyleSheet.create({
     fontSize: 10,
     fontWeight: '700',
     color: COLORS.success,
+  },
+
+  // DEBUG TEMPORAIRE - À SUPPRIMER
+  debugBox: {
+    backgroundColor: '#1a1a1a',
+    borderRadius: 8,
+    borderWidth: 2,
+    borderColor: '#ff3b30',
+    padding: 12,
+    marginBottom: 16,
+  },
+  debugScroll: {
+    maxHeight: 260,
+  },
+  debugTitre: {
+    color: '#ff3b30',
+    fontSize: 12,
+    fontWeight: '800',
+    marginBottom: 6,
+  },
+  debugTxt: {
+    color: '#00ff66',
+    fontSize: 11,
+    fontFamily: Platform.OS === 'ios' ? 'Courier' : 'monospace',
+    marginBottom: 4,
   },
 });

@@ -21,7 +21,14 @@
       "Bash(echo \"exit code: $?\")",
       "Bash(node --check /tmp/ModeDuoScreen_test.js)",
       "Bash(echo \"exit=$?\")",
-      "Read(//tmp/**)"
+      "Read(//tmp/**)",
+      "Read(//c/Sakina/**)",
+      "Read(//c//**)",
+      "WebFetch(domain:noorcouple-legal.vercel.app)",
+      "Bash(find /c -maxdepth 4 -iname \"*noorcouple*\")",
+      "Bash(find /c -maxdepth 5 -iname \"cgu-fr.html\")",
+      "Bash(git -C \"/c/Users/mibou/OneDrive/Documents/App/NoorCouple/\" status)",
+      "Bash(npx --no-install eslint screens/PaywallScreen.js utils/revenuecat.js)"
     ]
   }
 }

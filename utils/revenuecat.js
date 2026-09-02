@@ -34,12 +34,29 @@ export const initRevenueCat = async () => {
     return;
   }
   try {
+    // DEBUG TEMPORAIRE - À SUPPRIMER : log verbose forcé pour diagnostiquer
+    // le "offre indisponible" sur iOS (pas de Mac dispo pour lire la console).
+    await Purchases.setLogLevel(LOG_LEVEL.VERBOSE);
     Purchases.configure({ apiKey: REVENUECAT_API_KEY });
-    await Purchases.setLogLevel(__DEV__ ? LOG_LEVEL.DEBUG : LOG_LEVEL.ERROR);
     isConfigured = true;
     console.log('[REVENUECAT] SDK initialisé avec succès.');
   } catch (e) {
     console.log('[REVENUECAT] Erreur init:', e?.message || e);
+  }
+};
+
+// DEBUG TEMPORAIRE - À SUPPRIMER : infos utilisées par le bloc de diagnostic du paywall
+export const getDebugInfo = () => ({
+  platform: Platform.OS,
+  apiKeyPrefix: REVENUECAT_API_KEY ? REVENUECAT_API_KEY.substring(0, 8) : null,
+  isConfigured,
+});
+
+export const getAppUserID = async () => {
+  try {
+    return await Purchases.getAppUserID();
+  } catch (e) {
+    return null;
   }
 };
 
@@ -72,7 +89,14 @@ export const getOfferings = async () => {
     return offerings;
   } catch (e) {
     console.log('[REVENUECAT] Erreur getOfferings:', e?.message || e);
-    return null;
+    // DEBUG TEMPORAIRE - À SUPPRIMER : on retourne l'erreur complète au lieu
+    // de null pour pouvoir l'afficher à l'écran (pas de Mac pour lire la console TestFlight).
+    return {
+      __error: true,
+      message: e?.message || String(e),
+      code: e?.code,
+      readableErrorCode: e?.userInfo?.readableErrorCode,
+    };
   }
 };
 
