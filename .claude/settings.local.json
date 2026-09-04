@@ -28,7 +28,8 @@
       "Bash(find /c -maxdepth 4 -iname \"*noorcouple*\")",
       "Bash(find /c -maxdepth 5 -iname \"cgu-fr.html\")",
       "Bash(git -C \"/c/Users/mibou/OneDrive/Documents/App/NoorCouple/\" status)",
-      "Bash(npx --no-install eslint screens/PaywallScreen.js utils/revenuecat.js)"
+      "Bash(npx --no-install eslint screens/PaywallScreen.js utils/revenuecat.js)",
+      "Bash(npx --no-install eas-cli whoami)"
     ]
   }
 }
