@@ -30,9 +30,10 @@ import { supabase } from './config/supabase';
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
 
-import { appGoMain, appReset } from './utils/appState';
-export { appGoMain, appReset };
+import { appGoMain, appReset, appGoConnexion } from './utils/appState';
+export { appGoMain, appReset, appGoConnexion };
 import { initRevenueCat } from './utils/revenuecat';
+import { determinerRoleExport } from './utils/duo';
 
 if (Platform.OS !== 'web') {
   Notifications.setNotificationHandler({
@@ -104,6 +105,7 @@ export default function App() {
   const [initialTab, setInitialTab] = useState('Accueil');
   appReset.onReset = () => setAppState('onboarding');
   appGoMain.onGoMain = () => setAppState('main');
+  appGoConnexion.onGoConnexion = () => setAppState('connexion');
 
   useEffect(() => {
     const init = async () => {
@@ -138,18 +140,40 @@ export default function App() {
           }
 
           try {
-            const duoCode = await AsyncStorage.getItem('duo_code') || await AsyncStorage.getItem('duo_code_conjoint');
+            // determinerRoleExport() résout le code duo actif via
+            // resyncCodeParEmail si le code stocké localement est périmé
+            // (ex: régénération par l'initiateur) — et persiste lui-même le
+            // code resynchronisé en AsyncStorage.
+            const { code: duoCode, estInitiateur } = await determinerRoleExport();
             if (duoCode) {
-              const { data: duoData } = await supabase.from('duos').select('paiement_valide, expire_at').eq('code', duoCode).single();
-              if (duoData?.paiement_valide) {
+              const { data: duoData, error: duoError } = await supabase
+                .from('duos')
+                .select('paiement_valide, expire_at')
+                .eq('code', duoCode)
+                .maybeSingle();
+
+              if (duoError || !duoData) {
+                // Échec réseau, erreur Supabase, ou ligne introuvable :
+                // on ne sait pas si le paiement est valide ou non — on ne
+                // touche pas aux flags locaux existants.
+                console.log('[DUO] Vérification impossible, flags conservés');
+              } else if (duoData.paiement_valide === true) {
                 await AsyncStorage.setItem('duo_partenaire_paye', 'true');
                 if (duoData.expire_at) await AsyncStorage.setItem('duo_partenaire_expire_at', duoData.expire_at);
-              } else {
+                console.log('[DUO] Paiement confirmé, accès hérité maintenu');
+              } else if (duoData.paiement_valide === false) {
                 await AsyncStorage.removeItem('duo_partenaire_paye');
                 await AsyncStorage.removeItem('duo_partenaire_expire_at');
+                console.log('[DUO] Paiement explicitement invalide, nettoyage des flags');
+              }
+
+              if (!estInitiateur) {
+                await AsyncStorage.setItem('duo_code_conjoint', duoCode);
               }
             }
-          } catch (_) {}
+          } catch (_) {
+            console.log('[DUO] Vérification impossible, flags conservés');
+          }
 
           setAppState('main');
           return;

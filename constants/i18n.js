@@ -265,7 +265,7 @@ export const translations = {
     'profil.tester_notif': 'Tester les notifications',
     'profil.test_envoye': 'Test envoyé 🔔',
     'profil.test_msg': 'Une notification de test va arriver dans 3 secondes.',
-    'profil.reinit_confirm': 'Es-tu sûr(e) ? Toutes tes données seront supprimées.',
+    'profil.reinit_confirm': 'Cette action effacera définitivement votre progression, vos réponses et vos défis sur cet appareil. Cette action est irréversible.',
     'profil.notif_plan': 'Mon Plan',
     'profil.notif_plan_desc': 'Actions et rappels du plan 40 jours',
     'profil.notif_questions': 'Questions du jour',
@@ -295,8 +295,11 @@ export const translations = {
     'profil.rejoindre_btn': 'Rejoindre',
     'profil.supprimer_compte': 'Supprimer mon compte',
     'profil.supprimer_titre': 'Supprimer le compte',
-    'profil.supprimer_confirm': 'Êtes-vous sûr ? Cette action est irréversible. Toutes vos données seront supprimées définitivement.',
+    'profil.supprimer_confirm': 'Êtes-vous sûr ? Votre compte et toutes vos données (réponses, progression, duo) seront supprimés définitivement, sans aucune possibilité de récupération.',
     'profil.supprimer_btn': 'Supprimer',
+    'profil.deconnexion_titre': 'Se déconnecter ?',
+    'profil.deconnexion_confirm': 'Tes réponses, ta progression et ton code duo restent enregistrés sur cet appareil. Tu pourras te reconnecter avec ton compte à tout moment.',
+    'profil.deconnexion_btn': 'Se déconnecter',
 
     // Défis
     'defis.titre': 'Défis du couple',
@@ -722,7 +725,7 @@ export const translations = {
     'profil.tester_notif': 'Test notifications',
     'profil.test_envoye': 'Test sent 🔔',
     'profil.test_msg': 'A test notification will arrive in 3 seconds.',
-    'profil.reinit_confirm': 'Are you sure? All your data will be deleted.',
+    'profil.reinit_confirm': 'This will permanently erase your progress, your answers and your challenges on this device. This action is irreversible.',
     'profil.heure_matin': 'Morning tip time',
     'profil.heure_soir': 'Evening reminder time',
     'profil.version': 'NoorCouple — Version 1.0',
@@ -746,8 +749,11 @@ export const translations = {
     'profil.rejoindre_btn': 'Join',
     'profil.supprimer_compte': 'Delete my account',
     'profil.supprimer_titre': 'Delete account',
-    'profil.supprimer_confirm': 'Are you sure? This action is irreversible. All your data will be permanently deleted.',
+    'profil.supprimer_confirm': 'Are you sure? Your account and all your data (answers, progress, duo) will be permanently deleted, with no way to recover them.',
     'profil.supprimer_btn': 'Delete',
+    'profil.deconnexion_titre': 'Log out?',
+    'profil.deconnexion_confirm': 'Your answers, progress and duo code stay saved on this device. You can log back in with your account at any time.',
+    'profil.deconnexion_btn': 'Log out',
 
     // Défis
     'defis.titre': 'Couple Challenges',

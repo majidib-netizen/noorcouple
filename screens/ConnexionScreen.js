@@ -66,14 +66,18 @@ export default function ConnexionScreen({ navigation, route, onDone }) {
         // Restaurer duo + diagnostic depuis Supabase (nouveau téléphone)
         try {
           const userEmail = data.user.email || email.trim().toLowerCase();
-          const { data: duoData } = await supabase
+          const { data: duoData, error: duoError } = await supabase
             .from('duos')
             .select('code, initiateur, paiement_valide, expire_at, diagnostic_initiateur, diagnostic_conjoint')
             .or(`initiateur.eq.${userEmail},conjoint.eq.${userEmail}`)
             .eq('statut', 'actif')
-            .single();
+            .maybeSingle();
 
-          if (duoData) {
+          if (duoError) {
+            // Échec réseau ou erreur Supabase : impossible de confirmer quoi
+            // que ce soit, on ne touche pas aux flags locaux existants.
+            console.log('[DUO] Vérification impossible, flags conservés');
+          } else if (duoData) {
             const estInitiateur = duoData.initiateur === userEmail;
             if (estInitiateur) {
               await AsyncStorage.setItem('duo_code', duoData.code);
@@ -89,15 +93,24 @@ export default function ConnexionScreen({ navigation, route, onDone }) {
             if (diag?.reponses) {
               await AsyncStorage.setItem('plan_reponses', JSON.stringify(diag.reponses));
             }
-            if (duoData.paiement_valide) {
+            if (duoData.paiement_valide === true) {
               await AsyncStorage.setItem('duo_partenaire_paye', 'true');
               if (duoData.expire_at) await AsyncStorage.setItem('duo_partenaire_expire_at', duoData.expire_at);
-            } else {
+              console.log('[DUO] Paiement confirmé, accès hérité maintenu');
+            } else if (duoData.paiement_valide === false) {
               await AsyncStorage.removeItem('duo_partenaire_paye');
               await AsyncStorage.removeItem('duo_partenaire_expire_at');
+              console.log('[DUO] Paiement explicitement invalide, nettoyage des flags');
             }
+          } else {
+            // Pas de duo actif trouvé pour cet email : on ne sait pas si
+            // c'est réel (jamais rejoint) ou transitoire (duo pas encore
+            // synchronisé) — on ne touche pas aux flags locaux existants.
+            console.log('[DUO] Vérification impossible, flags conservés');
           }
-        } catch (_) {}
+        } catch (_) {
+          console.log('[DUO] Vérification impossible, flags conservés');
+        }
       }
       if (isMainStack) {
         navigation.reset({ index: 0, routes: [{ name: 'Main' }] });

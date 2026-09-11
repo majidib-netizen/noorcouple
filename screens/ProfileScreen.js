@@ -4,7 +4,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { COLORS, SIZES, RADIUS, SHADOW } from '../constants/theme';
-import { appReset } from '../utils/appState';
+import { appReset, appGoConnexion } from '../utils/appState';
 import { scheduleNotification, scheduleNotificationsPlan, annulerNotificationsQuestions, annulerNotificationsPlan } from '../utils/notifications';
 import { useLanguage } from '../context/LanguageContext';
 import { rejoindreAvecCode, regenererCodeDuo } from '../utils/duo';
@@ -364,6 +364,31 @@ export default function ProfileScreen() {
     );
   };
 
+  // ─── DÉCONNEXION ─────────────────────────────────────────────────────────────
+  // Contrairement à resetApp/supprimerCompte, ne touche qu'aux clés de
+  // session : réponses, progression, code duo et flags premium restent en
+  // AsyncStorage pour être toujours là au retour (et sont resynchronisés
+  // avec Supabase à la reconnexion, cf. ConnexionScreen).
+  const seDeconnecter = () => {
+    Alert.alert(
+      t('profil.deconnexion_titre'),
+      t('profil.deconnexion_confirm'),
+      [
+        { text: t('generic.annuler'), style: 'cancel' },
+        {
+          text: t('profil.deconnexion_btn'),
+          onPress: async () => {
+            try {
+              await supabase.auth.signOut();
+            } catch (_) {}
+            await AsyncStorage.removeItem('user_email');
+            appGoConnexion.onGoConnexion?.();
+          },
+        },
+      ]
+    );
+  };
+
   return (
     <SafeAreaView style={styles.safe}>
       <ScrollView style={styles.scroll} showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: insets.bottom + 80 }}>
@@ -690,6 +715,11 @@ export default function ProfileScreen() {
           </TouchableOpacity>
         )}
 
+        {/* Se déconnecter */}
+        <TouchableOpacity style={styles.logoutBtn} onPress={seDeconnecter}>
+          <Text style={styles.logoutTxt}>{t('profil.deconnexion_btn')}</Text>
+        </TouchableOpacity>
+
         {/* Supprimer mon compte */}
         <TouchableOpacity style={styles.deleteBtn} onPress={supprimerCompte} disabled={deleteLoading}>
           <Text style={styles.deleteTxt}>{deleteLoading ? '...' : t('profil.supprimer_compte')}</Text>
@@ -734,6 +764,8 @@ const styles = StyleSheet.create({
   resetText: { fontSize: SIZES.sm, color: '#cc0000', fontWeight: '600' },
   deleteBtn: { marginHorizontal: 20, marginBottom: 8, padding: 14, alignItems: 'center' },
   deleteTxt: { fontSize: SIZES.sm, color: '#cc0000', fontWeight: '400', textDecorationLine: 'underline' },
+  logoutBtn: { marginHorizontal: 20, marginBottom: 4, padding: 12, alignItems: 'center' },
+  logoutTxt: { fontSize: SIZES.sm, color: COLORS.textLight, fontWeight: '400' },
   legalLinks: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 8, marginTop: 12 },
   legalLink: { fontSize: SIZES.xs, color: COLORS.primary, textDecorationLine: 'underline' },
   legalSep: { fontSize: SIZES.xs, color: COLORS.textLight },
